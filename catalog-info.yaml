@@ -2,7 +2,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: workshop-python-keda-autoscaling
-  title: Python Event-Driven Autoscaling with KEDA
+  title: Event-Driven Autoscaling with KEDA - Python
   description: |
     Scale a Python Kafka consumer from zero to many replicas automatically using KEDA
   annotations:

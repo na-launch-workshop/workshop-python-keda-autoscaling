@@ -2,7 +2,7 @@ schemaVersion: 2.3.0
 metadata:
   name: workshop-python-keda-autoscaling
   version: 1.0.0
-  description: Python Event-Driven Autoscaling with KEDA
+  description: Event-Driven Autoscaling with KEDA - Python
 attributes:
   che-editor: vscode
 components:

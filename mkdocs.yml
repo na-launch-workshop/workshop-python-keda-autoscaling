@@ -1,4 +1,4 @@
-site_name: Python Event-Driven Autoscaling with KEDA
+site_name: Event-Driven Autoscaling with KEDA - Python
 site_description: Scale a Python Kafka consumer from zero to many replicas automatically using KEDA
 
 nav:
