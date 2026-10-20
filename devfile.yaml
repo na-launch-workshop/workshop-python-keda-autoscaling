@@ -1,0 +1,62 @@
+schemaVersion: 2.3.0
+metadata:
+  name: workshop-python-keda-autoscaling
+  version: 1.0.0
+  description: Event-Driven Autoscaling with KEDA and Kafka
+attributes:
+  che-editor: vscode
+components:
+  - name: tools
+    container:
+      image: image-registry.openshift-image-registry.svc:5000/workspace-images/udi-rhel9:latest
+      env:
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: kafka-kafka-bootstrap:9092
+        - name: KAFKA_TOPIC
+          value: keda-events
+        - name: PATH
+          value: /home/user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      volumeMounts:
+        - name: pip-cache
+          path: /home/user/.cache/pip
+      cpuLimit: '2'
+      cpuRequest: '500m'
+      memoryLimit: '3Gi'
+      memoryRequest: '1Gi'
+      mountSources: true
+
+  - name: pip-cache
+    volume:
+      size: 1G
+
+commands:
+  - id: produce
+    exec:
+      label: "1. Produce Messages (builds Kafka lag)"
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      # udi-rhel9 defaults python3 to 3.9; FastAPI needs 3.10+, so pin to python3.11.
+      commandLine: "python3.11 -m pip install --user -q -r requirements.txt && python3.11 producer.py 3000"
+      group:
+        kind: run
+        isDefault: false
+
+  - id: deploy
+    exec:
+      label: "2. Deploy Consumer (1 pod, no autoscaling)"
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: "oc apply -f manifests/deployment.yaml -f manifests/service.yaml -f manifests/route.yaml && oc scale deployment/workshop-python-keda-autoscaling --replicas=1"
+      group:
+        kind: run
+        isDefault: false
+
+  - id: apply-scaledobject
+    exec:
+      label: "3. Apply ScaledObject"
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: "oc apply -f manifests/scaledobject.yaml"
+      group:
+        kind: run
+        isDefault: true

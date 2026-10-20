@@ -1,0 +1,31 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: workshop-python-keda-autoscaling
+  title: Event-Driven Autoscaling with KEDA
+  description: |
+    Scale a Python Kafka consumer from zero to many replicas automatically using KEDA
+  annotations:
+    backstage.io/kubernetes-id: workshop-python-keda-autoscaling
+    backstage.io/kubernetes-namespace: developers-devspaces
+    backstage.io/techdocs-ref: dir:.
+#   backstage.io/techdocs-ref: dir:https://<hosted-git-repo>   # use absolute path instead to consolidate techdocs among repo forks
+#   gitlab.com/instance: ""                                    # uncomment these two gitlab.com lines to disable GitLab tabs
+#   gitlab.com/project-slug: ""                                # i.e. Issues, Pull/Merge Requests, CI in entity details
+    janus-idp.io/tekton: workshop-python-keda-autoscaling
+  tags:
+    - python
+    - keda
+    - kafka
+# links:
+#   - url: https://<devspaces-url>/#<hosted-git-repo>
+#     title: 🚀 Launch from Dev Spaces
+#     icon: web
+#   - url: https://<kafka-ui-url>
+#     title: Kafka UI
+#     icon: web
+spec:
+  type: module
+  lifecycle: development
+  owner: group:default/workshop-admins
+  subcomponentOf: component:default/workshop-repository

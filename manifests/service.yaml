@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: workshop-python-keda-autoscaling
+  labels:
+    app: workshop-python-keda-autoscaling
+    backstage.io/kubernetes-id: workshop-python-keda-autoscaling
+spec:
+  selector:
+    app: workshop-python-keda-autoscaling
+  ports:
+    - port: 8080
+      targetPort: 8080
