@@ -27,5 +27,5 @@ metadata:
 spec:
   type: module
   lifecycle: development
-  owner: group:default/workshop-admins
+  owner: group:default/users
   subcomponentOf: component:default/workshop-repository

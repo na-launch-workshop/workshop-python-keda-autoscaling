@@ -24,7 +24,6 @@ components:
       memoryLimit: '3Gi'
       memoryRequest: '1Gi'
       mountSources: true
-
   - name: pip-cache
     volume:
       size: 1G
