@@ -68,7 +68,7 @@ spec:
   triggers:
     - type: kafka
       metadata:
-        bootstrapServers: kafka-kafka-bootstrap.<your-namespace>.svc.cluster.local:9092
+        bootstrapServers: kafka-kafka-bootstrap.kafka.svc.cluster.local:9092
         consumerGroup: keda-consumer-group
         topic: keda-events
         lagThreshold: "10"
