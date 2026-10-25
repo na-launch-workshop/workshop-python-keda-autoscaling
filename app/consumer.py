@@ -26,13 +26,12 @@ class KafkaEventConsumer:
 
     def _run(self) -> None:
         consumer = Consumer(
-            {
-                "bootstrap.servers": config.BOOTSTRAP_SERVERS,
+            config.kafka_config({
                 "group.id": config.CONSUMER_GROUP,
                 "auto.offset.reset": "earliest",
                 "enable.auto.commit": True,
                 "max.poll.interval.ms": 300000,
-            }
+            })
         )
         consumer.subscribe([config.TOPIC])
         log.info("Subscribed to %s as %s", config.TOPIC, config.CONSUMER_GROUP)

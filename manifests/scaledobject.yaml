@@ -13,6 +13,8 @@ spec:
   cooldownPeriod: 60
   triggers:
     - type: kafka
+      authenticationRef:
+        name: keda-workshop-kafka-auth
       metadata:
         bootstrapServers: kafka-kafka-bootstrap.kafka.svc.cluster.local:9092
         consumerGroup: keda-consumer-group
@@ -20,3 +22,5 @@ spec:
         lagThreshold: "10"
         activationLagThreshold: "1"
         offsetResetPolicy: "earliest"
+        sasl: scram_sha512
+        tls: disable

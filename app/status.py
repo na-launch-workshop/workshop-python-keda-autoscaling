@@ -14,11 +14,10 @@ class LagReporter:
         # A consumer that never subscribes: it only issues OffsetFetch / metadata
         # requests, so it never joins the consumer group or steals partitions.
         self._consumer = Consumer(
-            {
-                "bootstrap.servers": config.BOOTSTRAP_SERVERS,
+            config.kafka_config({
                 "group.id": config.CONSUMER_GROUP,
                 "enable.auto.commit": False,
-            }
+            })
         )
 
     def close(self) -> None:

@@ -14,6 +14,10 @@ components:
           value: kafka-kafka-bootstrap.kafka.svc.cluster.local:9092
         - name: KAFKA_TOPIC
           value: keda-events
+        - name: KAFKA_SASL_USERNAME
+          value: keda-workshop
+        - name: KAFKA_SASL_PASSWORD
+          value: Inz2Yr4txYOxAnIIMLbvUmj64gH3dvko
         - name: PATH
           value: /home/user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       volumeMounts:
@@ -45,7 +49,7 @@ commands:
       label: "2. Deploy Consumer (1 pod, no autoscaling)"
       component: tools
       workingDir: ${PROJECT_SOURCE}
-      commandLine: "oc apply -f manifests/deployment.yaml -f manifests/service.yaml -f manifests/route.yaml && oc scale deployment/workshop-python-keda-autoscaling --replicas=1"
+      commandLine: "oc create secret generic keda-workshop-kafka-credentials --from-literal=username=keda-workshop --from-literal=password=Inz2Yr4txYOxAnIIMLbvUmj64gH3dvko --dry-run=client -o yaml | oc apply -f - && oc apply -f manifests/deployment.yaml -f manifests/service.yaml -f manifests/route.yaml -f manifests/triggerauthentication.yaml && oc scale deployment/workshop-python-keda-autoscaling --replicas=1"
       group:
         kind: run
         isDefault: false
