@@ -13,6 +13,7 @@ for ns in $(oc get ns -o name | grep '\-devspaces' | cut -d/ -f2 | sort); do
   echo -n "  → $ns ... "
   oc apply -f "$MANIFESTS/deployment.yaml" \
             -f "$MANIFESTS/service.yaml" \
+            -f "$MANIFESTS/interceptor-service.yaml" \
             -f "$MANIFESTS/route.yaml" \
             -n "$ns" --quiet 2>&1 && echo "done" || echo "FAILED"
 done

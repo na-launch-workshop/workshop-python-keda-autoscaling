@@ -11,6 +11,7 @@ spec:
     kind: Deployment
     apiVersion: apps/v1
     port: 8080
+    service: nba-scoreboard
   replicas:
     min: 0
     max: 5
