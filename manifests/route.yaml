@@ -1,14 +1,13 @@
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: workshop-python-keda-autoscaling
+  name: nba-scoreboard
   labels:
-    app: workshop-python-keda-autoscaling
-    backstage.io/kubernetes-id: workshop-python-keda-autoscaling
+    app: nba-scoreboard
 spec:
   to:
     kind: Service
-    name: workshop-python-keda-autoscaling
+    name: keda-add-ons-http-interceptor
   port:
     targetPort: 8080
   tls:

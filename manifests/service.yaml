@@ -1,13 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: workshop-python-keda-autoscaling
+  name: nba-scoreboard
   labels:
-    app: workshop-python-keda-autoscaling
-    backstage.io/kubernetes-id: workshop-python-keda-autoscaling
+    app: nba-scoreboard
 spec:
   selector:
-    app: workshop-python-keda-autoscaling
+    app: nba-scoreboard
   ports:
     - port: 8080
       targetPort: 8080

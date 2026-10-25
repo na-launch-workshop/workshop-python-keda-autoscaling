@@ -1,8 +1,8 @@
 schemaVersion: 2.3.0
 metadata:
-  name: workshop-python-keda-autoscaling
+  name: workshop-python-keda-http
   version: 1.0.0
-  description: Event-Driven Autoscaling with KEDA - Python
+  description: Event-Driven Autoscaling with KEDA HTTP Add-on
 attributes:
   che-editor: vscode
 components:
@@ -10,14 +10,8 @@ components:
     container:
       image: image-registry.openshift-image-registry.svc:5000/workspace-images/udi-rhel9:latest
       env:
-        - name: KAFKA_BOOTSTRAP_SERVERS
-          value: kafka-kafka-bootstrap.kafka.svc.cluster.local:9092
-        - name: KAFKA_TOPIC
-          value: keda-events
-        - name: KAFKA_SASL_USERNAME
-          value: keda-workshop
-        - name: KAFKA_SASL_PASSWORD
-          value: Inz2Yr4txYOxAnIIMLbvUmj64gH3dvko
+        - name: SCOREBOARD_URL
+          value: ""
         - name: PATH
           value: /home/user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       volumeMounts:
@@ -33,33 +27,39 @@ components:
       size: 1G
 
 commands:
-  - id: produce
+  - id: install
     exec:
-      label: "1. Produce Messages (builds Kafka lag)"
+      label: "1. Install dependencies"
       component: tools
       workingDir: ${PROJECT_SOURCE}
-      # udi-rhel9 defaults python3 to 3.9; FastAPI needs 3.10+, so pin to python3.11.
-      commandLine: "python3.11 -m pip install --user -q -r requirements.txt && python3.11 producer.py 3000"
+      commandLine: "python3.11 -m pip install --user -q -r requirements.txt"
       group:
-        kind: run
-        isDefault: false
+        kind: build
+        isDefault: true
 
-  - id: deploy
+  - id: get-url
     exec:
-      label: "2. Deploy Consumer (1 pod, no autoscaling)"
+      label: "2. Get my scoreboard URL"
       component: tools
       workingDir: ${PROJECT_SOURCE}
-      commandLine: "oc create secret generic keda-workshop-kafka-credentials --from-literal=username=keda-workshop --from-literal=password=Inz2Yr4txYOxAnIIMLbvUmj64gH3dvko --dry-run=client -o yaml | oc apply -f - && oc apply -f manifests/deployment.yaml -f manifests/service.yaml -f manifests/route.yaml -f manifests/triggerauthentication.yaml && oc scale deployment/workshop-python-keda-autoscaling --replicas=1"
-      group:
-        kind: run
-        isDefault: false
+      commandLine: "oc get route nba-scoreboard -o jsonpath='https://{.spec.host}' 2>/dev/null && echo ''"
 
-  - id: apply-scaledobject
+  - id: apply-httpscaledobject
     exec:
-      label: "3. Apply ScaledObject"
+      label: "3. Apply HTTPScaledObject"
       component: tools
       workingDir: ${PROJECT_SOURCE}
-      commandLine: "oc apply -f manifests/scaledobject.yaml"
+      commandLine: "oc apply -f manifests/httpscaledobject.yaml"
       group:
         kind: run
         isDefault: true
+
+  - id: surge
+    exec:
+      label: "4. Run surge (simulate halftime traffic)"
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: |
+        URL=$(oc get route nba-scoreboard -o jsonpath='https://{.spec.host}/api/score' 2>/dev/null)
+        python3.11 -m pip install --user -q requests 2>/dev/null
+        python3.11 surge.py "$URL" 20 60

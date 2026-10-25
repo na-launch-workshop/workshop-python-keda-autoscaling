@@ -1,40 +1,42 @@
-import logging
-from contextlib import asynccontextmanager
+import os
+import random
+import time
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app import config
-from app.consumer import KafkaEventConsumer
-from app.status import LagReporter
+app = FastAPI(title="Scoreboard")
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)-5s %(name)s : %(message)s")
-
-consumer = KafkaEventConsumer()
-lag_reporter = LagReporter()
+# Simulated live game state — increments slightly over time
+_score = {"knicks": 108, "spurs": 102, "quarter": 4, "clock": "3:24", "period": "Q4"}
+_last_update = time.time()
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    consumer.start()
-    yield
-    consumer.stop()
-    lag_reporter.close()
+def _tick_score() -> None:
+    global _last_update
+    now = time.time()
+    if now - _last_update > 15:
+        _last_update = now
+        team = random.choice(["knicks", "spurs"])
+        pts = random.choice([1, 2, 3])
+        _score[team] += pts
 
 
-app = FastAPI(title="Event-Driven Autoscaling with KEDA", lifespan=lifespan)
+@app.get("/api/score")
+def get_score():
+    _tick_score()
+    time.sleep(0.4)          # deliberate delay — makes the pod overwhelm-able under surge
+    return JSONResponse({
+        **_score,
+        "pod": os.environ.get("HOSTNAME", "unknown"),
+    })
 
 
-@app.get("/status")
-def status() -> dict:
-    return lag_reporter.status()
+@app.get("/api/health")
+def health():
+    return {"status": "ok"}
 
 
 app.mount("/", StaticFiles(directory=Path(__file__).parent / "static", html=True), name="static")
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=config.PORT)

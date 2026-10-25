@@ -1,0 +1,21 @@
+# EDIT: set host to your scoreboard Route URL (oc get route nba-scoreboard -o jsonpath='{.spec.host}')
+apiVersion: http.keda.sh/v1alpha1
+kind: HTTPScaledObject
+metadata:
+  name: nba-scoreboard
+spec:
+  hosts:
+    - <YOUR-ROUTE-HOST>
+  scaleTargetRef:
+    name: nba-scoreboard
+    kind: Deployment
+    apiVersion: apps/v1
+    port: 8080
+  replicas:
+    min: 0
+    max: 5
+  scalingMetric:
+    requestRate:
+      granularity: 1s
+      targetValue: 10
+      window: 1m
