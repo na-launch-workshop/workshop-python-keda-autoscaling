@@ -61,5 +61,4 @@ commands:
       workingDir: ${PROJECT_SOURCE}
       commandLine: |
         URL=$(oc get route nba-scoreboard -o jsonpath='https://{.spec.host}/api/score' 2>/dev/null)
-        python3.11 -m pip install --user -q requests 2>/dev/null
-        python3.11 surge.py "$URL" 20 60
+        python3.11 surge.py "$URL" 20 86400
