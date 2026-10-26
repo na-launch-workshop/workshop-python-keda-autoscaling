@@ -64,12 +64,9 @@
       font-size: 0.78rem;
     }
     .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #444; }
-    .status-dot.live  { background: var(--live); animation: pulse 1.5s infinite; }
-    .status-dot.error { background: var(--error); animation: blink .5s infinite; }
-    .status-text.live  { color: var(--live); }
-    .status-text.error { color: var(--error); }
+    .status-dot.live { background: var(--live); animation: pulse 1.5s infinite; }
+    .status-text.live { color: var(--live); }
     @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,230,118,.5)} 50%{box-shadow:0 0 0 6px rgba(0,230,118,0)} }
-    @keyframes blink  { 0%,100%{opacity:1} 50%{opacity:.2} }
 
     .scoreboard {
       display: grid;
@@ -390,13 +387,7 @@
         prevKnicks = d.knicks; prevSpurs = d.spurs;
         updateMetrics(true);
       } catch (_) {
-        errorCount++;
         updateMetrics(false);
-        document.getElementById('dot').className    = 'status-dot error';
-        document.getElementById('status').className = 'status-text error';
-        document.getElementById('status').textContent = 'CONNECTION LOST';
-        document.getElementById('period-label').textContent = 'OFFLINE';
-        document.getElementById('period-label').className   = 'quarter-label';
       }
     }
 
