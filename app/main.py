@@ -55,14 +55,24 @@ def get_status():
         return JSONResponse({"replicas": -1, "ready": -1, "available": -1, "namespace": _NAMESPACE})
     try:
         d = _apps_v1.read_namespaced_deployment("nba-scoreboard", _NAMESPACE)
+        core_v1 = k8s_client.CoreV1Api()
+        pods = core_v1.list_namespaced_pod(_NAMESPACE, label_selector="app=nba-scoreboard")
+        pod_names = [
+            p.metadata.name
+            for p in pods.items
+            if p.status.phase == "Running" and all(
+                c.ready for c in (p.status.container_statuses or [])
+            )
+        ]
         return JSONResponse({
             "replicas":  d.status.replicas or 0,
             "ready":     d.status.ready_replicas or 0,
             "available": d.status.available_replicas or 0,
+            "pods":      pod_names,
             "namespace": _NAMESPACE,
         })
     except Exception as e:
-        return JSONResponse({"replicas": -1, "ready": -1, "available": -1, "error": str(e), "namespace": _NAMESPACE})
+        return JSONResponse({"replicas": -1, "ready": -1, "available": -1, "pods": [], "error": str(e), "namespace": _NAMESPACE})
 
 
 app.mount("/", StaticFiles(directory=Path(__file__).parent / "static", html=True), name="static")

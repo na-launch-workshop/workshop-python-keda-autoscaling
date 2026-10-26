@@ -186,49 +186,61 @@
     .metrics {
       width: 100%;
       max-width: 720px;
-      background: #111;
-      border: 1px solid #222;
-      border-radius: 12px;
-      padding: 1rem 1.5rem;
+      background: #0d0d0d;
+      border: 1px solid #1e1e1e;
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
       margin-bottom: 1.5rem;
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
+      grid-template-columns: 160px 1fr;
+      gap: 1.5rem;
     }
-    .metric { text-align: center; }
-    .metric .m-label {
-      font-family: var(--mono);
-      font-size: 0.6rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: #555;
-      margin-bottom: 0.3rem;
-    }
-    .metric .m-val {
-      font-family: var(--mono);
-      font-size: 1.6rem;
-      font-weight: 700;
-      transition: color 0.4s;
-    }
-    .m-val.good  { color: var(--live); text-shadow: 0 0 12px rgba(0,230,118,.4); }
-    .m-val.warn  { color: #ffd700; }
-    .m-val.bad   { color: var(--error); text-shadow: 0 0 12px rgba(255,61,61,.4); }
 
-    /* Mini sparkline */
-    .spark-wrap {
-      grid-column: 1 / -1;
-      display: flex;
-      gap: 3px;
-      align-items: flex-end;
-      height: 28px;
-      margin-top: 0.25rem;
+    /* Arc gauge */
+    .gauge-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+    .gauge-label { font-family: var(--mono); font-size: 0.6rem; color: #555; letter-spacing: 0.15em; text-transform: uppercase; }
+    .gauge-svg { width: 130px; height: 80px; }
+    .gauge-num { font-family: var(--mono); font-size: 1.8rem; font-weight: 800; transition: color .4s, text-shadow .4s; }
+    .gauge-num.good { color: var(--live); text-shadow: 0 0 16px rgba(0,230,118,.5); }
+    .gauge-num.warn { color: var(--gold); text-shadow: 0 0 16px rgba(255,215,0,.4); }
+    .gauge-num.bad  { color: var(--error); text-shadow: 0 0 16px rgba(255,61,61,.5); }
+    .gauge-sub { font-family: var(--mono); font-size: 0.62rem; color: #444; }
+
+    /* Right panel */
+    .metrics-right { display: flex; flex-direction: column; gap: 0.875rem; }
+
+    /* Pod grid */
+    .pod-section-label { font-family: var(--mono); font-size: 0.6rem; color: #555; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.4rem; }
+    .pod-grid { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .pod-slot {
+      width: 80px; height: 52px;
+      border-radius: 7px;
+      border: 1px solid #222;
+      background: #111;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0.2rem;
+      transition: all 0.4s ease;
+      font-family: var(--mono);
     }
-    .spark-bar {
-      flex: 1;
-      border-radius: 2px 2px 0 0;
-      min-height: 3px;
-      transition: height 0.3s, background 0.3s;
+    .pod-slot.active {
+      border-color: rgba(0,230,118,.5);
+      background: rgba(0,230,118,.06);
+      box-shadow: 0 0 12px rgba(0,230,118,.2);
+      animation: pod-in 0.4s ease-out;
     }
+    @keyframes pod-in { from { transform: scale(.85); opacity:0; } to { transform: scale(1); opacity:1; } }
+    .pod-slot .pod-icon { font-size: 1.1rem; }
+    .pod-slot .pod-name { font-size: 0.52rem; color: #555; }
+    .pod-slot.active .pod-name { color: var(--live); }
+
+    /* Fail counter + sparkline */
+    .fail-row { display: flex; align-items: center; gap: 1rem; }
+    .fail-stat { font-family: var(--mono); text-align: center; min-width: 60px; }
+    .fail-stat .fl { font-size: 0.58rem; color: #555; letter-spacing: .1em; text-transform: uppercase; }
+    .fail-stat .fv { font-size: 1.4rem; font-weight: 700; transition: color .3s; }
+    .spark-wrap { flex: 1; display: flex; gap: 2px; align-items: flex-end; height: 36px; }
+    .spark-bar { flex: 1; border-radius: 2px 2px 0 0; min-height: 3px; transition: height .3s, background .3s; }
 
     /* Footer */
     .footer {
@@ -273,23 +285,39 @@
   </div>
 
   <div class="metrics">
-    <div class="metric">
-      <div class="m-label">Success Rate</div>
-      <div class="m-val good" id="m-rate">—</div>
+    <!-- Arc gauge -->
+    <div class="gauge-wrap">
+      <div class="gauge-label">Success Rate</div>
+      <svg class="gauge-svg" viewBox="0 0 130 80">
+        <path d="M15 75 A55 55 0 0 1 115 75" stroke="#1a1a1a" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <path id="gauge-arc" d="M15 75 A55 55 0 0 1 115 75" stroke="#00e676" stroke-width="10" fill="none"
+              stroke-linecap="round" stroke-dasharray="173" stroke-dashoffset="0"
+              style="transition:stroke-dashoffset .6s ease,stroke .6s"/>
+      </svg>
+      <div class="gauge-num good" id="m-rate">—</div>
+      <div class="gauge-sub" id="m-fail-sub">0 failures</div>
     </div>
-    <div class="metric">
-      <div class="m-label">Failed Polls</div>
-      <div class="m-val" style="color:#333" id="m-fail">0</div>
+
+    <!-- Right panel -->
+    <div class="metrics-right">
+      <div>
+        <div class="pod-section-label">KEDA — Active Pods</div>
+        <div class="pod-grid" id="pod-grid">
+          <!-- filled by JS -->
+        </div>
+      </div>
+      <div class="fail-row">
+        <div class="fail-stat">
+          <div class="fl">Requests</div>
+          <div class="fv" style="color:#888" id="m-total">0</div>
+        </div>
+        <div class="fail-stat">
+          <div class="fl">Errors</div>
+          <div class="fv" style="color:#333" id="m-fail">0</div>
+        </div>
+        <div class="spark-wrap" id="spark"></div>
+      </div>
     </div>
-    <div class="metric">
-      <div class="m-label">Pods Ready</div>
-      <div class="m-val" style="color:#888" id="m-ready">—</div>
-    </div>
-    <div class="metric">
-      <div class="m-label">Pods Total</div>
-      <div class="m-val" style="color:#888" id="m-replicas">—</div>
-    </div>
-    <div class="spark-wrap" id="spark"></div>
   </div>
 
   <div class="footer">
@@ -312,6 +340,7 @@
     const HISTORY = 30;
     const history = [];   // 1 = ok, 0 = fail
 
+    const ARC = 173;
     function updateMetrics(success) {
       totalPolls++;
       if (success) okPolls++; else failPolls++;
@@ -319,23 +348,47 @@
       if (history.length > HISTORY) history.shift();
 
       const rate = totalPolls > 0 ? Math.round((okPolls / totalPolls) * 100) : 0;
+      const cls = rate >= 90 ? 'good' : rate >= 60 ? 'warn' : 'bad';
+      const col = rate >= 90 ? '#00e676' : rate >= 60 ? '#ffd700' : '#ff3d3d';
+
       const rateEl = document.getElementById('m-rate');
       rateEl.textContent = rate + '%';
-      rateEl.className = 'm-val ' + (rate >= 90 ? 'good' : rate >= 60 ? 'warn' : 'bad');
+      rateEl.className = 'gauge-num ' + cls;
+
+      const arc = document.getElementById('gauge-arc');
+      arc.style.strokeDashoffset = ARC * (1 - rate / 100);
+      arc.style.stroke = col;
 
       document.getElementById('m-total').textContent = totalPolls;
-      document.getElementById('m-ok').textContent = okPolls;
-
-      const failEl = document.getElementById('m-fail');
-      failEl.textContent = failPolls;
-      failEl.style.color = failPolls > 0 ? 'var(--error)' : '#333';
+      document.getElementById('m-fail').textContent = failPolls;
+      document.getElementById('m-fail').style.color = failPolls > 0 ? 'var(--error)' : '#333';
+      document.getElementById('m-fail-sub').textContent = failPolls + ' failure' + (failPolls !== 1 ? 's' : '');
 
       // Sparkline
       const spark = document.getElementById('spark');
       spark.innerHTML = history.map(v =>
-        `<div class="spark-bar" style="height:${v ? 100 : 30}%;background:${v ? 'var(--live)' : 'var(--error)'}"></div>`
+        `<div class="spark-bar" style="height:${v ? 100 : 25}%;background:${v ? 'rgba(0,230,118,.7)' : 'var(--error)'}"></div>`
       ).join('');
     }
+
+    const MAX_PODS = 5;
+    let activePods = [];
+
+    function renderPods(pods) {
+      activePods = pods || [];
+      const grid = document.getElementById('pod-grid');
+      let html = '';
+      for (let i = 0; i < MAX_PODS; i++) {
+        const pod = activePods[i];
+        const name = pod ? pod.split('-').slice(-2).join('-') : '';
+        html += `<div class="pod-slot ${pod ? 'active' : ''}">
+          <div class="pod-icon">${pod ? '🟢' : '⬜'}</div>
+          <div class="pod-name">${name || 'idle'}</div>
+        </div>`;
+      }
+      grid.innerHTML = html;
+    }
+    renderPods([]);
 
     function bump(id) {
       const el = document.getElementById(id);
@@ -389,20 +442,7 @@
         const res = await fetch('/api/status', { cache: 'no-store' });
         if (!res.ok) return;
         const d = await res.json();
-        if (d.ready >= 0) {
-          const readyEl = document.getElementById('m-ready');
-          const repEl   = document.getElementById('m-replicas');
-          readyEl.textContent = d.ready;
-          repEl.textContent   = d.replicas;
-          const scaling = d.replicas > 1;
-          readyEl.style.color  = scaling ? 'var(--live)' : '#888';
-          repEl.style.color    = scaling ? 'var(--live)' : '#888';
-          if (scaling) {
-            readyEl.style.textShadow = '0 0 12px rgba(0,230,118,.4)';
-          } else {
-            readyEl.style.textShadow = '';
-          }
-        }
+        if (d.pods !== undefined) renderPods(d.pods);
       } catch(_) {}
     }
 
