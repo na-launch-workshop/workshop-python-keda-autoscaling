@@ -86,6 +86,7 @@
     }
     .team.knicks { background: linear-gradient(135deg, #0b1e47, #111); }
     .team.spurs  { background: linear-gradient(135deg, #1a1a1a, #111); }
+    .team-logo { width: 72px; height: 72px; object-fit: contain; }
     .team-abbr { font-size: 2.5rem; font-weight: 900; letter-spacing: 0.1em; font-family: var(--mono); }
     .knicks .team-abbr { color: var(--knicks); text-shadow: 0 0 30px rgba(245,132,38,.4); }
     .spurs  .team-abbr { color: var(--spurs);  text-shadow: 0 0 30px rgba(192,192,192,.3); }
@@ -254,6 +255,7 @@
 
     <div class="scoreboard">
       <div class="team knicks">
+        <img class="team-logo" src="https://cdn.nba.com/logos/nba/1610612752/global/L/logo.svg" alt="NYK" onerror="this.style.display='none'"/>
         <div class="team-abbr">NYK</div>
         <div class="team-city">New York Knicks</div>
         <div class="team-score" id="knicks-score">—</div>
@@ -265,6 +267,7 @@
         <div class="period" id="quarter">Q—</div>
       </div>
       <div class="team spurs">
+        <img class="team-logo" src="https://cdn.nba.com/logos/nba/1610612759/global/L/logo.svg" alt="SAS" onerror="this.style.display='none'"/>
         <div class="team-abbr">SAS</div>
         <div class="team-city">San Antonio Spurs</div>
         <div class="team-score" id="spurs-score">—</div>
