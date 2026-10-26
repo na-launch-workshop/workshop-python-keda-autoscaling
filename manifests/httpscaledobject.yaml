@@ -1,4 +1,5 @@
-# EDIT: set host to your scoreboard Route URL (oc get route nba-scoreboard -o jsonpath='{.spec.host}')
+# EDIT: set host to your scoreboard hostname — hostname only, no https:// prefix
+# Example: nba-scoreboard-user1-devspaces.apps.cluster-tm766.dyn.redhatworkshops.io
 apiVersion: http.keda.sh/v1alpha1
 kind: HTTPScaledObject
 metadata:
