@@ -41,6 +41,7 @@ def _tick_score() -> None:
 def get_score():
     acquired = _semaphore.acquire(blocking=False)
     if not acquired:
+        time.sleep(0.5)   # slow rejections so they don't flood the denominator
         return JSONResponse({"error": "overloaded"}, status_code=503)
     try:
         _tick_score()
