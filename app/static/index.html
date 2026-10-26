@@ -130,7 +130,11 @@
       letter-spacing: .15em;
       border-bottom: 1px solid var(--border);
       padding-bottom: .5rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
     }
+    .dash-logo { height: 22px; width: auto; filter: invert(1) hue-rotate(180deg); opacity: .9; }
 
     /* Arc gauge row */
     .gauge-row {
@@ -280,7 +284,7 @@
 
   <!-- RIGHT: Dashboard -->
   <div class="right">
-    <div class="dash-title">⚡ Live System Metrics</div>
+    <div class="dash-title"><img class="dash-logo" src="/logo.svg" alt="logo"/>⚡ Live System Metrics</div>
 
     <!-- Gauges -->
     <div class="gauge-row">
