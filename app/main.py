@@ -20,11 +20,19 @@ except Exception:
 app = FastAPI(title="Scoreboard")
 
 import threading
+import collections
 _semaphore = threading.Semaphore(12)
-_total = 0
-_ok = 0
-_fail = 0
-_lock = threading.Lock()
+_window = collections.deque()   # (timestamp, success)
+_wlock = threading.Lock()
+WINDOW = 30                     # rolling window in seconds
+
+def _record(success: bool) -> None:
+    now = time.time()
+    cutoff = now - WINDOW
+    with _wlock:
+        _window.append((now, success))
+        while _window and _window[0][0] < cutoff:
+            _window.popleft()
 
 # Simulated live game state — increments slightly over time
 _score = {"knicks": 108, "spurs": 102, "quarter": 4, "clock": "3:24", "period": "Q4"}
@@ -43,20 +51,15 @@ def _tick_score() -> None:
 
 @app.get("/api/score")
 def get_score():
-    global _total, _ok, _fail
     acquired = _semaphore.acquire(blocking=False)
-    with _lock:
-        _total += 1
     if not acquired:
         time.sleep(0.5)
-        with _lock:
-            _fail += 1
+        _record(False)
         return JSONResponse({"error": "overloaded"}, status_code=503)
     try:
         _tick_score()
         time.sleep(0.4)
-        with _lock:
-            _ok += 1
+        _record(True)
         return JSONResponse({
             **_score,
             "pod": os.environ.get("HOSTNAME", "unknown"),
@@ -72,13 +75,16 @@ def health():
 
 @app.get("/api/metrics")
 def get_metrics():
-    with _lock:
-        return JSONResponse({
-            "total": _total,
-            "ok":    _ok,
-            "fail":  _fail,
-            "rate":  round(_ok / _total * 100) if _total > 0 else 0,
-        })
+    now = time.time()
+    cutoff = now - WINDOW
+    with _wlock:
+        recent = list(_window)
+    recent = [(t, s) for t, s in recent if t >= cutoff]
+    total = len(recent)
+    ok    = sum(1 for _, s in recent if s)
+    fail  = total - ok
+    rate  = round(ok / total * 100) if total > 0 else 100
+    return JSONResponse({"total": total, "ok": ok, "fail": fail, "rate": rate})
 
 
 @app.get("/api/status")
