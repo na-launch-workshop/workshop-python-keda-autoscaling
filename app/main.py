@@ -19,8 +19,8 @@ except Exception:
 
 app = FastAPI(title="Scoreboard")
 
-_active = 0
-_MAX_CONCURRENT = 3
+import threading
+_semaphore = threading.Semaphore(3)
 
 # Simulated live game state — increments slightly over time
 _score = {"knicks": 108, "spurs": 102, "quarter": 4, "clock": "3:24", "period": "Q4"}
@@ -39,10 +39,9 @@ def _tick_score() -> None:
 
 @app.get("/api/score")
 def get_score():
-    global _active
-    if _active >= _MAX_CONCURRENT:
+    acquired = _semaphore.acquire(blocking=False)
+    if not acquired:
         return JSONResponse({"error": "overloaded"}, status_code=503)
-    _active += 1
     try:
         _tick_score()
         time.sleep(0.4)          # deliberate delay — makes the endpoint overwhelm-able under surge
@@ -51,7 +50,7 @@ def get_score():
             "pod": os.environ.get("HOSTNAME", "unknown"),
         })
     finally:
-        _active -= 1
+        _semaphore.release()
 
 
 @app.get("/api/health")
