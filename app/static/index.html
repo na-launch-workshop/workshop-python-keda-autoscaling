@@ -202,10 +202,7 @@
       flex: 1;
     }
     .spark-lbl { font-family: var(--mono); font-size: .58rem; color: #555; text-transform: uppercase; letter-spacing: .12em; margin-bottom: .5rem; }
-    .sparkline {
-      display: flex; gap: 3px; align-items: flex-end; height: 60px;
-    }
-    .sb { flex: 1; border-radius: 2px 2px 0 0; min-height: 3px; transition: height .3s, background .3s; }
+    .spark-svg { width: 100%; height: 70px; display: block; }
   </style>
 </head>
 <body>
@@ -298,8 +295,25 @@
 
     <!-- Sparkline -->
     <div class="spark-section">
-      <div class="spark-lbl">Poll history — last 30 requests</div>
-      <div class="sparkline" id="spark"></div>
+      <div class="spark-lbl">Success rate — rolling 30s window</div>
+      <svg class="spark-svg" id="spark" viewBox="0 0 300 70" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+            <stop id="sg-top" offset="0%" stop-color="#00e676" stop-opacity=".25"/>
+            <stop offset="100%" stop-color="#00e676" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- grid -->
+        <line x1="0" y1="17" x2="300" y2="17" stroke="rgba(255,255,255,.04)" stroke-width=".5"/>
+        <line x1="0" y1="35" x2="300" y2="35" stroke="rgba(255,255,255,.06)" stroke-width=".5"/>
+        <line x1="0" y1="52" x2="300" y2="52" stroke="rgba(255,255,255,.04)" stroke-width=".5"/>
+        <path id="spark-fill" d="" fill="url(#sg)"/>
+        <path id="spark-line" d="" fill="none" stroke="#00e676" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"
+              style="filter:drop-shadow(0 0 3px #00e676)"/>
+        <circle id="spark-dot" cx="300" cy="10" r="3.5" fill="#00e676"
+                style="filter:drop-shadow(0 0 5px #00e676)"/>
+      </svg>
     </div>
   </div>
 
@@ -342,9 +356,34 @@
       failEl.style.color = fail > 0 ? 'var(--error)' : '#333';
       document.getElementById('m-fail-sub').textContent = fail.toLocaleString() + ' failure' + (fail !== 1 ? 's' : '');
 
-      document.getElementById('spark').innerHTML = history.map(v =>
-        `<div class="sb" style="height:${v ? 100 : 20}%;background:${v ? 'rgba(0,230,118,.7)' : 'var(--error)'}"></div>`
-      ).join('');
+      // SVG area chart
+      const W = 300, H = 70, PAD = 8;
+      const pts = history.length < 2 ? [] : history.map((v, i) => {
+        const x = (i / (history.length - 1)) * W;
+        const y = PAD + (1 - v) * (H - PAD * 2);
+        return [x, y];
+      });
+      if (pts.length >= 2) {
+        // smooth bezier path
+        let d = `M${pts[0][0]},${pts[0][1]}`;
+        for (let i = 1; i < pts.length; i++) {
+          const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+          const cx = (x0 + x1) / 2;
+          d += ` C${cx},${y0} ${cx},${y1} ${x1},${y1}`;
+        }
+        const last = pts[pts.length - 1];
+        const fillD = d + ` L${last[0]},${H} L0,${H} Z`;
+        const lineColor = col;
+        document.getElementById('spark-line').setAttribute('d', d);
+        document.getElementById('spark-line').style.stroke = lineColor;
+        document.getElementById('spark-line').style.filter = `drop-shadow(0 0 3px ${lineColor})`;
+        document.getElementById('spark-fill').setAttribute('d', fillD);
+        document.getElementById('sg-top').setAttribute('stop-color', lineColor);
+        document.getElementById('spark-dot').setAttribute('cx', last[0]);
+        document.getElementById('spark-dot').setAttribute('cy', last[1]);
+        document.getElementById('spark-dot').style.fill = lineColor;
+        document.getElementById('spark-dot').style.filter = `drop-shadow(0 0 5px ${lineColor})`;
+      }
     }
 
     async function fetchMetrics() {
