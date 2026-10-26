@@ -5,355 +5,354 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NBA Finals — Game 5</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg:     #0a0a0a;
+      --s1:     #111;
+      --s2:     #0d0d0d;
+      --border: #1e1e1e;
       --knicks: #f58426;
       --spurs:  #c0c0c0;
       --live:   #00e676;
       --error:  #ff3d3d;
       --gold:   #ffd700;
-      --mono:   'Share Tech Mono', monospace;
+      --mono:   'Courier New', monospace;
     }
+
     body {
       background: var(--bg);
       color: #fff;
       font-family: 'Segoe UI', sans-serif;
-      min-height: 100vh;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      overflow: hidden;
+    }
+
+    /* ── LEFT: Scoreboard ─────────────────── */
+    .left {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 2rem;
+      border-right: 1px solid var(--border);
+      gap: 1.5rem;
     }
 
-    /* Header */
-    .header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
+    .header { text-align: center; }
     .series-label {
-      font-size: 0.7rem;
-      letter-spacing: 0.25em;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
       color: var(--gold);
       text-transform: uppercase;
       font-family: var(--mono);
-      margin-bottom: 0.25rem;
     }
     .game-label {
-      font-size: 1.1rem;
-      letter-spacing: 0.15em;
-      color: #888;
-      text-transform: uppercase;
+      font-size: 0.85rem;
+      color: #555;
+      letter-spacing: 0.1em;
       font-family: var(--mono);
+      margin-top: 0.25rem;
     }
 
-    /* Status bar */
     .status-bar {
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 0.5rem;
-      margin-bottom: 2.5rem;
       font-family: var(--mono);
       font-size: 0.78rem;
     }
-    .status-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: #444;
-      transition: background 0.3s;
-    }
-    .status-dot.live    { background: var(--live); animation: pulse 1.5s infinite; }
-    .status-dot.error   { background: var(--error); animation: blink 0.5s infinite; }
-    .status-text        { color: #888; }
-    .status-text.live   { color: var(--live); }
-    .status-text.error  { color: var(--error); }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #444; }
+    .status-dot.live  { background: var(--live); animation: pulse 1.5s infinite; }
+    .status-dot.error { background: var(--error); animation: blink .5s infinite; }
+    .status-text.live  { color: var(--live); }
+    .status-text.error { color: var(--error); }
     @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,230,118,.5)} 50%{box-shadow:0 0 0 6px rgba(0,230,118,0)} }
     @keyframes blink  { 0%,100%{opacity:1} 50%{opacity:.2} }
 
-    /* Scoreboard */
     .scoreboard {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
-      gap: 0;
-      align-items: center;
-      background: #111;
-      border: 1px solid #222;
+      background: var(--s1);
+      border: 1px solid var(--border);
       border-radius: 16px;
       overflow: hidden;
       width: 100%;
-      max-width: 720px;
-      margin-bottom: 2rem;
     }
     .team {
-      padding: 2.5rem 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    .team.knicks { background: linear-gradient(135deg, #0b1e47 0%, #111 100%); }
-    .team.spurs  { background: linear-gradient(135deg, #1a1a1a 0%, #111 100%); }
-    .team-abbr {
-      font-size: 3rem;
-      font-weight: 900;
-      letter-spacing: 0.1em;
-      font-family: var(--mono);
-    }
-    .knicks .team-abbr { color: var(--knicks); text-shadow: 0 0 30px rgba(245,132,38,.4); }
-    .spurs  .team-abbr { color: var(--spurs);  text-shadow: 0 0 30px rgba(192,192,192,.3); }
-    .team-city {
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: #555;
-      font-family: var(--mono);
-    }
-    .team-score {
-      font-size: 5.5rem;
-      font-weight: 900;
-      font-family: var(--mono);
-      line-height: 1;
-      transition: color 0.3s;
-    }
-    .knicks .team-score { color: #fff; }
-    .spurs  .team-score { color: #ccc; }
-    .team-score.bump { animation: score-bump 0.4s ease-out; }
-    @keyframes score-bump { 0%{transform:scale(1.15)} 100%{transform:scale(1)} }
-
-    /* Centre divider */
-    .centre {
       padding: 2rem 1.5rem;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.5rem;
-      background: #111;
-      border-left: 1px solid #1e1e1e;
-      border-right: 1px solid #1e1e1e;
+      gap: 0.6rem;
     }
-    .quarter-label {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      color: var(--error);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
+    .team.knicks { background: linear-gradient(135deg, #0b1e47, #111); }
+    .team.spurs  { background: linear-gradient(135deg, #1a1a1a, #111); }
+    .team-abbr { font-size: 2.5rem; font-weight: 900; letter-spacing: 0.1em; font-family: var(--mono); }
+    .knicks .team-abbr { color: var(--knicks); text-shadow: 0 0 30px rgba(245,132,38,.4); }
+    .spurs  .team-abbr { color: var(--spurs);  text-shadow: 0 0 30px rgba(192,192,192,.3); }
+    .team-city { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: #555; font-family: var(--mono); }
+    .team-score { font-size: 5rem; font-weight: 900; font-family: var(--mono); line-height: 1; }
+    .knicks .team-score { color: #fff; }
+    .spurs  .team-score { color: #ccc; }
+    .team-score.bump { animation: sbump .4s ease-out; }
+    @keyframes sbump { 0%{transform:scale(1.15)} 100%{transform:scale(1)} }
+
+    .centre {
+      padding: 2rem 1.25rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+      background: var(--s1);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
     }
+    .quarter-label { font-family: var(--mono); font-size: 0.62rem; color: var(--error); letter-spacing: .15em; text-transform: uppercase; }
     .quarter-label.live { color: var(--live); }
-    .clock {
-      font-family: var(--mono);
-      font-size: 2rem;
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: 0.05em;
-    }
-    .period {
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      color: #555;
-      letter-spacing: 0.12em;
-    }
-    .vs { font-family: var(--mono); font-size: 0.75rem; color: #333; }
+    .clock { font-family: var(--mono); font-size: 1.8rem; font-weight: 700; color: #fff; }
+    .vs    { font-family: var(--mono); font-size: .7rem; color: #333; }
+    .period{ font-family: var(--mono); font-size: .65rem; color: #555; letter-spacing: .12em; }
 
-    /* Error state — shown in status bar only, no overlay */
+    .pod-label-footer { font-family: var(--mono); font-size: .6rem; color: #333; letter-spacing: .1em; text-align: center; }
 
-    /* Metrics strip */
-    .metrics {
-      width: 100%;
-      max-width: 720px;
-      background: #0d0d0d;
-      border: 1px solid #1e1e1e;
-      border-radius: 14px;
-      padding: 1.25rem 1.5rem;
-      margin-bottom: 1.5rem;
+    /* ── RIGHT: Dashboard ─────────────────── */
+    .right {
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem;
+      gap: 1rem;
+      overflow-y: auto;
+    }
+
+    .dash-title {
+      font-family: var(--mono);
+      font-size: .65rem;
+      color: #444;
+      text-transform: uppercase;
+      letter-spacing: .15em;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: .5rem;
+    }
+
+    /* Arc gauge row */
+    .gauge-row {
       display: grid;
-      grid-template-columns: 160px 1fr;
-      gap: 1.5rem;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
     }
+    .gauge-card {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .875rem;
+      display: flex; flex-direction: column; align-items: center; gap: .25rem;
+    }
+    .glbl { font-family: var(--mono); font-size: .58rem; color: #555; text-transform: uppercase; letter-spacing: .12em; }
+    .gauge-svg { width: 110px; height: 68px; }
+    .gnum { font-family: var(--mono); font-size: 1.6rem; font-weight: 800; transition: color .4s, text-shadow .4s; }
+    .gnum.good { color: var(--live); text-shadow: 0 0 14px rgba(0,230,118,.5); }
+    .gnum.warn { color: var(--gold); text-shadow: 0 0 14px rgba(255,215,0,.4); }
+    .gnum.bad  { color: var(--error); text-shadow: 0 0 14px rgba(255,61,61,.5); }
+    .gsub { font-family: var(--mono); font-size: .58rem; color: #444; }
 
-    /* Arc gauge */
-    .gauge-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
-    .gauge-label { font-family: var(--mono); font-size: 0.6rem; color: #555; letter-spacing: 0.15em; text-transform: uppercase; }
-    .gauge-svg { width: 130px; height: 80px; }
-    .gauge-num { font-family: var(--mono); font-size: 1.8rem; font-weight: 800; transition: color .4s, text-shadow .4s; }
-    .gauge-num.good { color: var(--live); text-shadow: 0 0 16px rgba(0,230,118,.5); }
-    .gauge-num.warn { color: var(--gold); text-shadow: 0 0 16px rgba(255,215,0,.4); }
-    .gauge-num.bad  { color: var(--error); text-shadow: 0 0 16px rgba(255,61,61,.5); }
-    .gauge-sub { font-family: var(--mono); font-size: 0.62rem; color: #444; }
-
-    /* Right panel */
-    .metrics-right { display: flex; flex-direction: column; gap: 0.875rem; }
+    /* Counters */
+    .counter-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .75rem;
+    }
+    .counter {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .75rem;
+      text-align: center;
+    }
+    .counter .cl { font-family: var(--mono); font-size: .55rem; color: #555; text-transform: uppercase; letter-spacing: .1em; margin-bottom: .3rem; }
+    .counter .cv { font-family: var(--mono); font-size: 1.4rem; font-weight: 700; transition: color .3s; }
 
     /* Pod grid */
-    .pod-section-label { font-family: var(--mono); font-size: 0.6rem; color: #555; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.4rem; }
-    .pod-grid { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .pod-section {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .875rem;
+    }
+    .pod-sec-lbl { font-family: var(--mono); font-size: .58rem; color: #555; text-transform: uppercase; letter-spacing: .12em; margin-bottom: .6rem; }
+    .pod-grid { display: flex; gap: .5rem; flex-wrap: wrap; }
     .pod-slot {
       width: 80px; height: 52px;
-      border-radius: 7px;
-      border: 1px solid #222;
-      background: #111;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 0.2rem;
-      transition: all 0.4s ease;
-      font-family: var(--mono);
+      border-radius: 7px; border: 1px solid #222;
+      background: #0d0d0d;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .2rem;
+      transition: all .4s; font-family: var(--mono);
     }
     .pod-slot.active {
-      border-color: rgba(0,230,118,.5);
-      background: rgba(0,230,118,.06);
+      border-color: rgba(0,230,118,.5); background: rgba(0,230,118,.06);
       box-shadow: 0 0 12px rgba(0,230,118,.2);
-      animation: pod-in 0.4s ease-out;
+      animation: pod-in .4s ease-out;
     }
-    @keyframes pod-in { from { transform: scale(.85); opacity:0; } to { transform: scale(1); opacity:1; } }
-    .pod-slot .pod-icon { font-size: 1.1rem; }
-    .pod-slot .pod-name { font-size: 0.52rem; color: #555; }
-    .pod-slot.active .pod-name { color: var(--live); }
+    @keyframes pod-in { from{transform:scale(.85);opacity:0} to{transform:scale(1);opacity:1} }
+    .pod-slot .pi { font-size: 1rem; }
+    .pod-slot .pn { font-size: .5rem; color: #555; }
+    .pod-slot.active .pn { color: var(--live); }
 
-    /* Fail counter + sparkline */
-    .fail-row { display: flex; align-items: center; gap: 1rem; }
-    .fail-stat { font-family: var(--mono); text-align: center; min-width: 60px; }
-    .fail-stat .fl { font-size: 0.58rem; color: #555; letter-spacing: .1em; text-transform: uppercase; }
-    .fail-stat .fv { font-size: 1.4rem; font-weight: 700; transition: color .3s; }
-    .spark-wrap { flex: 1; display: flex; gap: 2px; align-items: flex-end; height: 36px; }
-    .spark-bar { flex: 1; border-radius: 2px 2px 0 0; min-height: 3px; transition: height .3s, background .3s; }
-
-    /* Footer */
-    .footer {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      color: #333;
-      text-align: center;
-      letter-spacing: 0.1em;
+    /* Sparkline */
+    .spark-section {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .875rem;
+      flex: 1;
     }
-    .pod-label { color: #555; margin-top: 0.25rem; }
+    .spark-lbl { font-family: var(--mono); font-size: .58rem; color: #555; text-transform: uppercase; letter-spacing: .12em; margin-bottom: .5rem; }
+    .sparkline {
+      display: flex; gap: 3px; align-items: flex-end; height: 60px;
+    }
+    .sb { flex: 1; border-radius: 2px 2px 0 0; min-height: 3px; transition: height .3s, background .3s; }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <div class="series-label">🏆 NBA Finals 2026 — Knicks Lead Series 3-1</div>
-    <div class="game-label">Game 5 · Madison Square Garden · New York</div>
-  </div>
-
-  <div class="status-bar">
-    <div class="status-dot" id="dot"></div>
-    <span class="status-text" id="status">Connecting…</span>
-  </div>
-
-  <div class="scoreboard">
-    <div class="team knicks">
-      <div class="team-abbr">NYK</div>
-      <div class="team-city">New York Knicks</div>
-      <div class="team-score" id="knicks-score">—</div>
-    </div>
-    <div class="centre">
-      <div class="quarter-label" id="period-label">LOADING</div>
-      <div class="clock" id="clock">—:——</div>
-      <div class="vs">vs</div>
-      <div class="period" id="quarter">Q—</div>
-    </div>
-    <div class="team spurs">
-      <div class="team-abbr">SAS</div>
-      <div class="team-city">San Antonio Spurs</div>
-      <div class="team-score" id="spurs-score">—</div>
-    </div>
-  </div>
-
-  <div class="metrics">
-    <!-- Arc gauge -->
-    <div class="gauge-wrap">
-      <div class="gauge-label">Success Rate</div>
-      <svg class="gauge-svg" viewBox="0 0 130 80">
-        <path d="M15 75 A55 55 0 0 1 115 75" stroke="#1a1a1a" stroke-width="10" fill="none" stroke-linecap="round"/>
-        <path id="gauge-arc" d="M15 75 A55 55 0 0 1 115 75" stroke="#00e676" stroke-width="10" fill="none"
-              stroke-linecap="round" stroke-dasharray="173" stroke-dashoffset="0"
-              style="transition:stroke-dashoffset .6s ease,stroke .6s"/>
-      </svg>
-      <div class="gauge-num good" id="m-rate">—</div>
-      <div class="gauge-sub" id="m-fail-sub">0 failures</div>
+  <!-- LEFT: Scoreboard -->
+  <div class="left">
+    <div class="header">
+      <div class="series-label">🏆 NBA Finals 2026 — Knicks Lead Series 3-1</div>
+      <div class="game-label">Game 5 · Madison Square Garden · New York</div>
     </div>
 
-    <!-- Right panel -->
-    <div class="metrics-right">
-      <div>
-        <div class="pod-section-label">KEDA — Active Pods</div>
-        <div class="pod-grid" id="pod-grid">
-          <!-- filled by JS -->
-        </div>
+    <div class="status-bar">
+      <div class="status-dot" id="dot"></div>
+      <span class="status-text" id="status">Connecting…</span>
+    </div>
+
+    <div class="scoreboard">
+      <div class="team knicks">
+        <div class="team-abbr">NYK</div>
+        <div class="team-city">New York Knicks</div>
+        <div class="team-score" id="knicks-score">—</div>
       </div>
-      <div class="fail-row">
-        <div class="fail-stat">
-          <div class="fl">Requests</div>
-          <div class="fv" style="color:#888" id="m-total">0</div>
-        </div>
-        <div class="fail-stat">
-          <div class="fl">Errors</div>
-          <div class="fv" style="color:#333" id="m-fail">0</div>
-        </div>
-        <div class="spark-wrap" id="spark"></div>
+      <div class="centre">
+        <div class="quarter-label" id="period-label">LOADING</div>
+        <div class="clock" id="clock">—:——</div>
+        <div class="vs">vs</div>
+        <div class="period" id="quarter">Q—</div>
+      </div>
+      <div class="team spurs">
+        <div class="team-abbr">SAS</div>
+        <div class="team-city">San Antonio Spurs</div>
+        <div class="team-score" id="spurs-score">—</div>
       </div>
     </div>
+
+    <div class="pod-label-footer" id="pod-label"></div>
   </div>
 
-  <div class="footer">
-    AUTO-REFRESHES EVERY 3 SECONDS
-    <div class="pod-label" id="pod-label"></div>
+  <!-- RIGHT: Dashboard -->
+  <div class="right">
+    <div class="dash-title">⚡ Live System Metrics</div>
+
+    <!-- Gauges -->
+    <div class="gauge-row">
+      <div class="gauge-card">
+        <div class="glbl">Success Rate</div>
+        <svg class="gauge-svg" viewBox="0 0 110 68">
+          <path d="M10 64 A46 46 0 0 1 100 64" stroke="#1a1a1a" stroke-width="9" fill="none" stroke-linecap="round"/>
+          <path id="gauge-arc" d="M10 64 A46 46 0 0 1 100 64" stroke="#00e676" stroke-width="9" fill="none"
+                stroke-linecap="round" stroke-dasharray="145" stroke-dashoffset="0"
+                style="transition:stroke-dashoffset .6s,stroke .6s;filter:drop-shadow(0 0 6px #00e676)"/>
+        </svg>
+        <div class="gnum good" id="m-rate">—</div>
+        <div class="gsub" id="m-fail-sub">0 failures</div>
+      </div>
+
+      <div class="gauge-card">
+        <div class="glbl">Request Volume</div>
+        <div style="display:flex;align-items:center;justify-content:center;flex:1">
+          <div style="text-align:center">
+            <div class="gnum" style="color:#888;font-size:2.2rem" id="m-total">0</div>
+            <div class="gsub">total polls</div>
+          </div>
+        </div>
+        <div class="gsub" id="m-ok-sub" style="color:var(--live)">0 successful</div>
+      </div>
+    </div>
+
+    <!-- Counters -->
+    <div class="counter-row">
+      <div class="counter">
+        <div class="cl">Errors</div>
+        <div class="cv" style="color:#333" id="m-fail">0</div>
+      </div>
+      <div class="counter">
+        <div class="cl">Pods Ready</div>
+        <div class="cv" style="color:#888" id="m-ready">—</div>
+      </div>
+      <div class="counter">
+        <div class="cl">Pod Total</div>
+        <div class="cv" style="color:#888" id="m-replicas">—</div>
+      </div>
+    </div>
+
+    <!-- Pod grid -->
+    <div class="pod-section">
+      <div class="pod-sec-lbl">KEDA — Active Pods</div>
+      <div class="pod-grid" id="pod-grid"></div>
+    </div>
+
+    <!-- Sparkline -->
+    <div class="spark-section">
+      <div class="spark-lbl">Poll history — last 30 requests</div>
+      <div class="sparkline" id="spark"></div>
+    </div>
   </div>
 
   <script>
-    let prevKnicks = null, prevSpurs = null;
-    let errorCount = 0;
+    let prevKnicks = null, prevSpurs = null, errorCount = 0;
     let totalPolls = 0, okPolls = 0, failPolls = 0;
-    // m-total and m-ok removed from DOM but kept for rate calc
-    const HISTORY = 30;
-    const history = [];   // 1 = ok, 0 = fail
+    const HISTORY = 30, ARC = 145;
+    const history = [];
 
-    const ARC = 173;
     function updateMetrics(success) {
       totalPolls++;
       if (success) okPolls++; else failPolls++;
       history.push(success ? 1 : 0);
       if (history.length > HISTORY) history.shift();
 
-      const rate = totalPolls > 0 ? Math.round((okPolls / totalPolls) * 100) : 0;
-      const cls = rate >= 90 ? 'good' : rate >= 60 ? 'warn' : 'bad';
-      const col = rate >= 90 ? '#00e676' : rate >= 60 ? '#ffd700' : '#ff3d3d';
+      const rate = totalPolls > 0 ? Math.round(okPolls / totalPolls * 100) : 0;
+      const cls  = rate >= 90 ? 'good' : rate >= 60 ? 'warn' : 'bad';
+      const col  = rate >= 90 ? '#00e676' : rate >= 60 ? '#ffd700' : '#ff3d3d';
 
       const rateEl = document.getElementById('m-rate');
       rateEl.textContent = rate + '%';
-      rateEl.className = 'gauge-num ' + cls;
+      rateEl.className = 'gnum ' + cls;
 
       const arc = document.getElementById('gauge-arc');
       arc.style.strokeDashoffset = ARC * (1 - rate / 100);
       arc.style.stroke = col;
+      arc.style.filter = `drop-shadow(0 0 6px ${col})`;
 
       document.getElementById('m-total').textContent = totalPolls;
-      document.getElementById('m-fail').textContent = failPolls;
-      document.getElementById('m-fail').style.color = failPolls > 0 ? 'var(--error)' : '#333';
+      document.getElementById('m-ok-sub').textContent = okPolls + ' successful';
+
+      const failEl = document.getElementById('m-fail');
+      failEl.textContent = failPolls;
+      failEl.style.color = failPolls > 0 ? 'var(--error)' : '#333';
       document.getElementById('m-fail-sub').textContent = failPolls + ' failure' + (failPolls !== 1 ? 's' : '');
 
-      // Sparkline
-      const spark = document.getElementById('spark');
-      spark.innerHTML = history.map(v =>
-        `<div class="spark-bar" style="height:${v ? 100 : 25}%;background:${v ? 'rgba(0,230,118,.7)' : 'var(--error)'}"></div>`
+      document.getElementById('spark').innerHTML = history.map(v =>
+        `<div class="sb" style="height:${v ? 100 : 20}%;background:${v ? 'rgba(0,230,118,.7)' : 'var(--error)'}"></div>`
       ).join('');
     }
 
-    const MAX_PODS = 5;
-    let activePods = [];
-
     function renderPods(pods) {
-      activePods = pods || [];
       const grid = document.getElementById('pod-grid');
       let html = '';
-      for (let i = 0; i < MAX_PODS; i++) {
-        const pod = activePods[i];
+      for (let i = 0; i < 5; i++) {
+        const pod = pods[i];
         const name = pod ? pod.split('-').slice(-2).join('-') : '';
         html += `<div class="pod-slot ${pod ? 'active' : ''}">
-          <div class="pod-icon">${pod ? '🟢' : '⬜'}</div>
-          <div class="pod-name">${name || 'idle'}</div>
+          <div class="pi">${pod ? '🟢' : '⬜'}</div>
+          <div class="pn">${name || 'idle'}</div>
         </div>`;
       }
       grid.innerHTML = html;
@@ -362,9 +361,7 @@
 
     function bump(id) {
       const el = document.getElementById(id);
-      el.classList.remove('bump');
-      void el.offsetWidth;
-      el.classList.add('bump');
+      el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
     }
 
     async function fetchScore() {
@@ -374,22 +371,20 @@
         const d = await res.json();
 
         errorCount = 0;
-
-        document.getElementById('dot').className = 'status-dot live';
+        document.getElementById('dot').className    = 'status-dot live';
         document.getElementById('status').className = 'status-text live';
         document.getElementById('status').textContent = 'LIVE';
 
         if (prevKnicks !== null && d.knicks !== prevKnicks) bump('knicks-score');
         if (prevSpurs  !== null && d.spurs  !== prevSpurs)  bump('spurs-score');
 
-        document.getElementById('knicks-score').textContent = d.knicks;
-        document.getElementById('spurs-score').textContent  = d.spurs;
-        document.getElementById('clock').textContent         = d.clock;
-        document.getElementById('quarter').textContent       = d.quarter;
-        document.getElementById('period-label').textContent  = 'LIVE';
-        document.getElementById('period-label').className    = 'quarter-label live';
-        document.getElementById('pod-label').textContent     = `POD: ${d.pod}`;
-
+        document.getElementById('knicks-score').textContent  = d.knicks;
+        document.getElementById('spurs-score').textContent   = d.spurs;
+        document.getElementById('clock').textContent          = d.clock;
+        document.getElementById('quarter').textContent        = d.quarter;
+        document.getElementById('period-label').textContent   = 'LIVE';
+        document.getElementById('period-label').className     = 'quarter-label live';
+        document.getElementById('pod-label').textContent      = `POD: ${d.pod}`;
         prevKnicks = d.knicks; prevSpurs = d.spurs;
         updateMetrics(true);
       } catch (_) {
@@ -408,12 +403,18 @@
         const res = await fetch('/api/status', { cache: 'no-store' });
         if (!res.ok) return;
         const d = await res.json();
-        if (d.pods !== undefined) renderPods(d.pods);
+        if (d.pods) {
+          renderPods(d.pods);
+          document.getElementById('m-ready').textContent    = d.ready >= 0 ? d.ready : '—';
+          document.getElementById('m-replicas').textContent = d.replicas >= 0 ? d.replicas : '—';
+          const sc = d.ready > 1;
+          document.getElementById('m-ready').style.color    = sc ? 'var(--live)' : '#888';
+          document.getElementById('m-replicas').style.color = sc ? 'var(--live)' : '#888';
+        }
       } catch(_) {}
     }
 
-    fetchScore();
-    fetchStatus();
+    fetchScore(); fetchStatus();
     setInterval(fetchScore, 3000);
     setInterval(fetchStatus, 3000);
   </script>
