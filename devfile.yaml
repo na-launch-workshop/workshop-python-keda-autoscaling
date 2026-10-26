@@ -10,8 +10,6 @@ components:
     container:
       image: image-registry.openshift-image-registry.svc:5000/workspace-images/udi-rhel9:latest
       env:
-        - name: SCOREBOARD_URL
-          value: ""
         - name: PATH
           value: /home/user/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       volumeMounts:
@@ -27,19 +25,30 @@ components:
       size: 1G
 
 commands:
-  - id: install
+  - id: deploy-scoreboard
     exec:
-      label: "1. Install dependencies"
+      label: "1. Deploy scoreboard"
       component: tools
       workingDir: ${PROJECT_SOURCE}
-      commandLine: "python3.11 -m pip install --user -q -r requirements.txt"
+      commandLine: |
+        oc apply -f manifests/deployment.yaml \
+                 -f manifests/service.yaml \
+                 -f manifests/interceptor-service.yaml \
+                 -f manifests/route.yaml
       group:
         kind: build
         isDefault: true
 
+  - id: install
+    exec:
+      label: "2. Install dependencies"
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: "python3.11 -m pip install --user -q -r requirements.txt"
+
   - id: get-url
     exec:
-      label: "2. Get my scoreboard URL"
+      label: "3. Get my scoreboard URL"
       component: tools
       workingDir: ${PROJECT_SOURCE}
       commandLine: |
@@ -49,9 +58,19 @@ commands:
         echo "nba-scoreboard-${NS}.apps.cluster-tm766.dyn.redhatworkshops.io"
         echo ""
 
+  - id: surge
+    exec:
+      label: "4. Run surge (simulate halftime traffic)"
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: |
+        NS=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
+        URL="https://nba-scoreboard-${NS}.apps.cluster-tm766.dyn.redhatworkshops.io/api/score"
+        python3.11 surge.py "$URL" 20 86400
+
   - id: apply-httpscaledobject
     exec:
-      label: "3. Apply HTTPScaledObject + enable KEDA routing"
+      label: "5. Apply HTTPScaledObject + enable KEDA routing"
       component: tools
       workingDir: ${PROJECT_SOURCE}
       commandLine: |
@@ -59,15 +78,3 @@ commands:
         oc patch route nba-scoreboard --type=json \
           -p='[{"op":"replace","path":"/spec/to/name","value":"keda-interceptor"}]' &&
         echo "Done — KEDA is now managing your scoreboard."
-      group:
-        kind: run
-        isDefault: true
-
-  - id: surge
-    exec:
-      label: "4. Run surge (simulate halftime traffic)"
-      component: tools
-      workingDir: ${PROJECT_SOURCE}
-      commandLine: |
-        URL=$(oc get route nba-scoreboard -o jsonpath='https://{.spec.host}/api/score' 2>/dev/null)
-        python3.11 surge.py "$URL" 20 86400
