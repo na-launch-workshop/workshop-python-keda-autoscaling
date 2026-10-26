@@ -117,7 +117,7 @@
       flex-direction: column;
       padding: 1.5rem;
       gap: 1rem;
-      overflow-y: auto;
+      overflow: hidden;
     }
 
     .dash-title {
@@ -199,10 +199,43 @@
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: .875rem;
-      flex: 1;
     }
     .spark-lbl { font-family: var(--mono); font-size: .58rem; color: #555; text-transform: uppercase; letter-spacing: .12em; margin-bottom: .5rem; }
-    .spark-svg { width: 100%; height: 70px; display: block; }
+    .spark-svg { width: 100%; height: 52px; display: block; }
+
+    /* Log panel */
+    .log-section {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .875rem;
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .log-lbl { font-family: var(--mono); font-size: .58rem; color: #555; text-transform: uppercase; letter-spacing: .12em; margin-bottom: .5rem; flex-shrink: 0; }
+    .log-list {
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column-reverse;
+    }
+    .log-entry {
+      font-family: var(--mono);
+      font-size: .65rem;
+      padding: .2rem 0;
+      border-bottom: 1px solid rgba(255,255,255,.03);
+      display: flex;
+      gap: .75rem;
+      align-items: center;
+    }
+    .log-time  { color: #444; flex-shrink: 0; }
+    .log-rate  { font-weight: 700; flex-shrink: 0; min-width: 40px; }
+    .log-total { color: #555; }
+    .log-entry.good .log-rate { color: var(--live); }
+    .log-entry.warn .log-rate { color: var(--gold); }
+    .log-entry.bad  .log-rate { color: var(--error); }
   </style>
 </head>
 <body>
@@ -294,7 +327,7 @@
     </div>
 
     <!-- Sparkline -->
-    <div class="spark-section">
+    <div class="spark-section" style="flex-shrink:0">
       <div class="spark-lbl">Success rate — rolling 30s window</div>
       <svg class="spark-svg" id="spark" viewBox="0 0 300 70" preserveAspectRatio="none">
         <defs>
@@ -315,6 +348,13 @@
                 style="filter:drop-shadow(0 0 5px #00e676)"/>
       </svg>
     </div>
+
+    <!-- Log panel -->
+    <div class="log-section">
+      <div class="log-lbl">Activity Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+
   </div>
 
   <script>
@@ -386,12 +426,37 @@
       }
     }
 
+    let logEntries = [];
+    let lastLogRate = null;
+
+    function appendLog(rate, total, fail) {
+      if (total === 0) return;
+      // Only log when rate changes meaningfully or every 10s
+      const now = new Date();
+      const ts = now.toLocaleTimeString();
+      const cls = rate >= 90 ? 'good' : rate >= 60 ? 'warn' : 'bad';
+      const icon = rate >= 90 ? '✅' : rate >= 60 ? '⚠️' : '❌';
+      logEntries.unshift({ ts, rate, total, fail, cls, icon });
+      if (logEntries.length > 50) logEntries.pop();
+      document.getElementById('log-list').innerHTML = logEntries.map(e =>
+        `<div class="log-entry ${e.cls}">
+          <span class="log-time">${e.ts}</span>
+          <span class="log-rate">${e.icon} ${e.rate}%</span>
+          <span class="log-total">${e.total} reqs · ${e.fail} failed</span>
+        </div>`
+      ).join('');
+    }
+
     async function fetchMetrics() {
       try {
         const res = await fetch('/api/metrics', { cache: 'no-store' });
         if (!res.ok) return;
         const d = await res.json();
         renderMetrics(d.total, d.ok, d.fail, d.rate);
+        if (lastLogRate === null || Math.abs(d.rate - lastLogRate) >= 3 || d.total === 0) {
+          appendLog(d.rate, d.total, d.fail);
+          lastLogRate = d.rate;
+        }
       } catch(_) {}
     }
 
