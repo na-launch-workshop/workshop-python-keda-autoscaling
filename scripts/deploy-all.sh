@@ -37,6 +37,21 @@ for ns in $(oc get ns -o name | grep '\-devspaces' | cut -d/ -f2 | sort); do
     --clusterrole=view \
     --serviceaccount="$ns:default" \
     -n "$ns" --dry-run=client -o yaml 2>&1 | oc apply -f - --quiet 2>&1
+  # Grant workspace SAs permission to patch routes (needed for the KEDA exercise)
+  oc apply -f - --quiet -n "$ns" 2>&1 <<ROLE
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: route-patcher
+rules:
+  - apiGroups: ["route.openshift.io"]
+    resources: ["routes"]
+    verbs: ["get", "patch", "update"]
+ROLE
+  oc create rolebinding route-patcher \
+    --role=route-patcher \
+    --group="system:serviceaccounts:$ns" \
+    -n "$ns" --dry-run=client -o yaml 2>&1 | oc apply -f - --quiet 2>&1
   echo "done"
 done
 

@@ -46,10 +46,14 @@ commands:
 
   - id: apply-httpscaledobject
     exec:
-      label: "3. Apply HTTPScaledObject"
+      label: "3. Apply HTTPScaledObject + enable KEDA routing"
       component: tools
       workingDir: ${PROJECT_SOURCE}
-      commandLine: "oc apply -f manifests/httpscaledobject.yaml"
+      commandLine: |
+        oc apply -f manifests/httpscaledobject.yaml &&
+        oc patch route nba-scoreboard --type=json \
+          -p='[{"op":"replace","path":"/spec/to/name","value":"keda-interceptor"}]' &&
+        echo "Done — KEDA is now managing your scoreboard."
       group:
         kind: run
         isDefault: true

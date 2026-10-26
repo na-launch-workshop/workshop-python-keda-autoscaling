@@ -7,7 +7,7 @@ metadata:
 spec:
   to:
     kind: Service
-    name: keda-interceptor
+    name: nba-scoreboard
   port:
     targetPort: 8080
   tls:
