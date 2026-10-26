@@ -304,20 +304,24 @@
   </div>
 
   <script>
-    let prevKnicks = null, prevSpurs = null, errorCount = 0;
-    let totalPolls = 0, okPolls = 0, failPolls = 0;
-    const HISTORY = 30, ARC = 145;
+    let prevKnicks = null, prevSpurs = null;
+    const ARC = 145, HISTORY = 30;
     const history = [];
+    let lastTotal = 0;
 
-    function updateMetrics(success) {
-      totalPolls++;
-      if (success) okPolls++; else failPolls++;
-      history.push(success ? 1 : 0);
-      if (history.length > HISTORY) history.shift();
+    function renderMetrics(total, ok, fail, rate) {
+      const newReqs = total - lastTotal;
+      if (newReqs > 0) {
+        const slices = Math.min(newReqs, 10);
+        const okSlice = Math.round(slices * rate / 100);
+        for (let i = 0; i < okSlice; i++)          history.push(1);
+        for (let i = 0; i < slices - okSlice; i++) history.push(0);
+        while (history.length > HISTORY) history.shift();
+        lastTotal = total;
+      }
 
-      const rate = totalPolls > 0 ? Math.round(okPolls / totalPolls * 100) : 0;
-      const cls  = rate >= 90 ? 'good' : rate >= 60 ? 'warn' : 'bad';
-      const col  = rate >= 90 ? '#00e676' : rate >= 60 ? '#ffd700' : '#ff3d3d';
+      const cls = rate >= 90 ? 'good' : rate >= 60 ? 'warn' : 'bad';
+      const col = rate >= 90 ? '#00e676' : rate >= 60 ? '#ffd700' : '#ff3d3d';
 
       const rateEl = document.getElementById('m-rate');
       rateEl.textContent = rate + '%';
@@ -328,19 +332,28 @@
       arc.style.stroke = col;
       arc.style.filter = `drop-shadow(0 0 6px ${col})`;
 
-      document.getElementById('m-total').textContent     = totalPolls;
-      document.getElementById('m-total-big').textContent  = totalPolls;
-      document.getElementById('m-ok-sub').textContent     = okPolls + ' successful';
-      document.getElementById('m-ok-big').textContent     = okPolls;
+      document.getElementById('m-total').textContent      = total.toLocaleString();
+      document.getElementById('m-total-big').textContent  = total.toLocaleString();
+      document.getElementById('m-ok-big').textContent     = ok.toLocaleString();
+      document.getElementById('m-ok-sub').textContent     = ok.toLocaleString() + ' successful';
 
       const failEl = document.getElementById('m-fail');
-      failEl.textContent = failPolls;
-      failEl.style.color = failPolls > 0 ? 'var(--error)' : '#333';
-      document.getElementById('m-fail-sub').textContent = failPolls + ' failure' + (failPolls !== 1 ? 's' : '');
+      failEl.textContent = fail.toLocaleString();
+      failEl.style.color = fail > 0 ? 'var(--error)' : '#333';
+      document.getElementById('m-fail-sub').textContent = fail.toLocaleString() + ' failure' + (fail !== 1 ? 's' : '');
 
       document.getElementById('spark').innerHTML = history.map(v =>
         `<div class="sb" style="height:${v ? 100 : 20}%;background:${v ? 'rgba(0,230,118,.7)' : 'var(--error)'}"></div>`
       ).join('');
+    }
+
+    async function fetchMetrics() {
+      try {
+        const res = await fetch('/api/metrics', { cache: 'no-store' });
+        if (!res.ok) return;
+        const d = await res.json();
+        renderMetrics(d.total, d.ok, d.fail, d.rate);
+      } catch(_) {}
     }
 
     function renderPods(pods) {
@@ -385,9 +398,8 @@
         document.getElementById('period-label').className     = 'quarter-label live';
         document.getElementById('pod-label').textContent      = `POD: ${d.pod}`;
         prevKnicks = d.knicks; prevSpurs = d.spurs;
-        updateMetrics(true);
       } catch (_) {
-        updateMetrics(false);
+        // score fetch failed — metrics come from server-side /api/metrics
       }
     }
 
@@ -404,9 +416,10 @@
       } catch(_) {}
     }
 
-    fetchScore(); fetchStatus();
+    fetchScore(); fetchStatus(); fetchMetrics();
     setInterval(fetchScore, 3000);
     setInterval(fetchStatus, 3000);
+    setInterval(fetchMetrics, 1000);
   </script>
 </body>
 </html>

@@ -21,6 +21,10 @@ app = FastAPI(title="Scoreboard")
 
 import threading
 _semaphore = threading.Semaphore(12)
+_total = 0
+_ok = 0
+_fail = 0
+_lock = threading.Lock()
 
 # Simulated live game state — increments slightly over time
 _score = {"knicks": 108, "spurs": 102, "quarter": 4, "clock": "3:24", "period": "Q4"}
@@ -39,13 +43,20 @@ def _tick_score() -> None:
 
 @app.get("/api/score")
 def get_score():
+    global _total, _ok, _fail
     acquired = _semaphore.acquire(blocking=False)
+    with _lock:
+        _total += 1
     if not acquired:
-        time.sleep(0.5)   # slow rejections so they don't flood the denominator
+        time.sleep(0.5)
+        with _lock:
+            _fail += 1
         return JSONResponse({"error": "overloaded"}, status_code=503)
     try:
         _tick_score()
-        time.sleep(0.4)          # deliberate delay — makes the endpoint overwhelm-able under surge
+        time.sleep(0.4)
+        with _lock:
+            _ok += 1
         return JSONResponse({
             **_score,
             "pod": os.environ.get("HOSTNAME", "unknown"),
@@ -57,6 +68,17 @@ def get_score():
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/api/metrics")
+def get_metrics():
+    with _lock:
+        return JSONResponse({
+            "total": _total,
+            "ok":    _ok,
+            "fail":  _fail,
+            "rate":  round(_ok / _total * 100) if _total > 0 else 0,
+        })
 
 
 @app.get("/api/status")
