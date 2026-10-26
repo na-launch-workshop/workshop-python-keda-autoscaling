@@ -42,7 +42,12 @@ commands:
       label: "2. Get my scoreboard URL"
       component: tools
       workingDir: ${PROJECT_SOURCE}
-      commandLine: "oc get route nba-scoreboard -o jsonpath='https://{.spec.host}' 2>/dev/null && echo ''"
+      commandLine: |
+        NS=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
+        echo ""
+        echo "Your scoreboard hostname (paste into httpscaledobject.yaml):"
+        echo "nba-scoreboard-${NS}.apps.cluster-tm766.dyn.redhatworkshops.io"
+        echo ""
 
   - id: apply-httpscaledobject
     exec:
