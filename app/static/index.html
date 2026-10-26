@@ -182,6 +182,54 @@
     .error-overlay p { color: #888; font-size: 0.85rem; font-family: var(--mono); }
     .error-code { font-size: 4rem; font-family: var(--mono); color: #333; font-weight: 900; }
 
+    /* Metrics strip */
+    .metrics {
+      width: 100%;
+      max-width: 720px;
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+    .metric { text-align: center; }
+    .metric .m-label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 0.3rem;
+    }
+    .metric .m-val {
+      font-family: var(--mono);
+      font-size: 1.6rem;
+      font-weight: 700;
+      transition: color 0.4s;
+    }
+    .m-val.good  { color: var(--live); text-shadow: 0 0 12px rgba(0,230,118,.4); }
+    .m-val.warn  { color: #ffd700; }
+    .m-val.bad   { color: var(--error); text-shadow: 0 0 12px rgba(255,61,61,.4); }
+
+    /* Mini sparkline */
+    .spark-wrap {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 3px;
+      align-items: flex-end;
+      height: 28px;
+      margin-top: 0.25rem;
+    }
+    .spark-bar {
+      flex: 1;
+      border-radius: 2px 2px 0 0;
+      min-height: 3px;
+      transition: height 0.3s, background 0.3s;
+    }
+
     /* Footer */
     .footer {
       font-family: var(--mono);
@@ -224,6 +272,26 @@
     </div>
   </div>
 
+  <div class="metrics">
+    <div class="metric">
+      <div class="m-label">Success Rate</div>
+      <div class="m-val good" id="m-rate">—</div>
+    </div>
+    <div class="metric">
+      <div class="m-label">Total Polls</div>
+      <div class="m-val" style="color:#888" id="m-total">0</div>
+    </div>
+    <div class="metric">
+      <div class="m-label">Successful</div>
+      <div class="m-val good" id="m-ok">0</div>
+    </div>
+    <div class="metric">
+      <div class="m-label">Failed</div>
+      <div class="m-val" style="color:#333" id="m-fail">0</div>
+    </div>
+    <div class="spark-wrap" id="spark"></div>
+  </div>
+
   <div class="footer">
     AUTO-REFRESHES EVERY 3 SECONDS
     <div class="pod-label" id="pod-label"></div>
@@ -239,6 +307,34 @@
   <script>
     let prevKnicks = null, prevSpurs = null;
     let errorCount = 0;
+    let totalPolls = 0, okPolls = 0, failPolls = 0;
+    const HISTORY = 30;
+    const history = [];   // 1 = ok, 0 = fail
+
+    function updateMetrics(success) {
+      totalPolls++;
+      if (success) okPolls++; else failPolls++;
+      history.push(success ? 1 : 0);
+      if (history.length > HISTORY) history.shift();
+
+      const rate = totalPolls > 0 ? Math.round((okPolls / totalPolls) * 100) : 0;
+      const rateEl = document.getElementById('m-rate');
+      rateEl.textContent = rate + '%';
+      rateEl.className = 'm-val ' + (rate >= 90 ? 'good' : rate >= 60 ? 'warn' : 'bad');
+
+      document.getElementById('m-total').textContent = totalPolls;
+      document.getElementById('m-ok').textContent = okPolls;
+
+      const failEl = document.getElementById('m-fail');
+      failEl.textContent = failPolls;
+      failEl.style.color = failPolls > 0 ? 'var(--error)' : '#333';
+
+      // Sparkline
+      const spark = document.getElementById('spark');
+      spark.innerHTML = history.map(v =>
+        `<div class="spark-bar" style="height:${v ? 100 : 30}%;background:${v ? 'var(--live)' : 'var(--error)'}"></div>`
+      ).join('');
+    }
 
     function bump(id) {
       const el = document.getElementById(id);
@@ -272,8 +368,10 @@
         document.getElementById('pod-label').textContent     = `POD: ${d.pod}`;
 
         prevKnicks = d.knicks; prevSpurs = d.spurs;
+        updateMetrics(true);
       } catch (_) {
         errorCount++;
+        updateMetrics(false);
         document.getElementById('dot').className    = 'status-dot error';
         document.getElementById('status').className = 'status-text error';
         document.getElementById('status').textContent = 'CONNECTION LOST';
