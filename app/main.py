@@ -20,7 +20,7 @@ except Exception:
 app = FastAPI(title="Scoreboard")
 
 import threading
-_semaphore = threading.Semaphore(3)
+_semaphore = threading.Semaphore(12)
 
 # Simulated live game state — increments slightly over time
 _score = {"knicks": 108, "spurs": 102, "quarter": 4, "clock": "3:24", "period": "Q4"}
