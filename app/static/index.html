@@ -278,16 +278,16 @@
       <div class="m-val good" id="m-rate">—</div>
     </div>
     <div class="metric">
-      <div class="m-label">Total Polls</div>
-      <div class="m-val" style="color:#888" id="m-total">0</div>
-    </div>
-    <div class="metric">
-      <div class="m-label">Successful</div>
-      <div class="m-val good" id="m-ok">0</div>
-    </div>
-    <div class="metric">
-      <div class="m-label">Failed</div>
+      <div class="m-label">Failed Polls</div>
       <div class="m-val" style="color:#333" id="m-fail">0</div>
+    </div>
+    <div class="metric">
+      <div class="m-label">Pods Ready</div>
+      <div class="m-val" style="color:#888" id="m-ready">—</div>
+    </div>
+    <div class="metric">
+      <div class="m-label">Pods Total</div>
+      <div class="m-val" style="color:#888" id="m-replicas">—</div>
     </div>
     <div class="spark-wrap" id="spark"></div>
   </div>
@@ -308,6 +308,7 @@
     let prevKnicks = null, prevSpurs = null;
     let errorCount = 0;
     let totalPolls = 0, okPolls = 0, failPolls = 0;
+    // m-total and m-ok removed from DOM but kept for rate calc
     const HISTORY = 30;
     const history = [];   // 1 = ok, 0 = fail
 
@@ -383,8 +384,32 @@
       }
     }
 
+    async function fetchStatus() {
+      try {
+        const res = await fetch('/api/status', { cache: 'no-store' });
+        if (!res.ok) return;
+        const d = await res.json();
+        if (d.ready >= 0) {
+          const readyEl = document.getElementById('m-ready');
+          const repEl   = document.getElementById('m-replicas');
+          readyEl.textContent = d.ready;
+          repEl.textContent   = d.replicas;
+          const scaling = d.replicas > 1;
+          readyEl.style.color  = scaling ? 'var(--live)' : '#888';
+          repEl.style.color    = scaling ? 'var(--live)' : '#888';
+          if (scaling) {
+            readyEl.style.textShadow = '0 0 12px rgba(0,230,118,.4)';
+          } else {
+            readyEl.style.textShadow = '';
+          }
+        }
+      } catch(_) {}
+    }
+
     fetchScore();
+    fetchStatus();
     setInterval(fetchScore, 3000);
+    setInterval(fetchStatus, 3000);
   </script>
 </body>
 </html>

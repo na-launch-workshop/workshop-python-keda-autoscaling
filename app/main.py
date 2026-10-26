@@ -7,6 +7,16 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+try:
+    from kubernetes import client as k8s_client, config as k8s_config
+    _NAMESPACE = Path("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read_text().strip()
+    k8s_config.load_incluster_config()
+    _apps_v1 = k8s_client.AppsV1Api()
+    _K8S = True
+except Exception:
+    _K8S = False
+    _NAMESPACE = "unknown"
+
 app = FastAPI(title="Scoreboard")
 
 # Simulated live game state — increments slightly over time
@@ -37,6 +47,22 @@ def get_score():
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/api/status")
+def get_status():
+    if not _K8S:
+        return JSONResponse({"replicas": -1, "ready": -1, "available": -1, "namespace": _NAMESPACE})
+    try:
+        d = _apps_v1.read_namespaced_deployment("nba-scoreboard", _NAMESPACE)
+        return JSONResponse({
+            "replicas":  d.status.replicas or 0,
+            "ready":     d.status.ready_replicas or 0,
+            "available": d.status.available_replicas or 0,
+            "namespace": _NAMESPACE,
+        })
+    except Exception as e:
+        return JSONResponse({"replicas": -1, "ready": -1, "available": -1, "error": str(e), "namespace": _NAMESPACE})
 
 
 app.mount("/", StaticFiles(directory=Path(__file__).parent / "static", html=True), name="static")

@@ -33,6 +33,10 @@ for ns in $(oc get ns -o name | grep '\-devspaces' | cut -d/ -f2 | sort); do
     --clusterrole=keda-http-scaledobject-editor \
     --group="system:serviceaccounts:$ns" \
     -n "$ns" --dry-run=client -o yaml 2>&1 | oc apply -f - --quiet 2>&1
+  oc create rolebinding scoreboard-deployment-reader \
+    --clusterrole=view \
+    --serviceaccount="$ns:default" \
+    -n "$ns" --dry-run=client -o yaml 2>&1 | oc apply -f - --quiet 2>&1
   echo "done"
 done
 
