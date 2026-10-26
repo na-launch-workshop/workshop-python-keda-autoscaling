@@ -1,0 +1,27 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: nba-scoreboard
+  namespace: openshift
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: nba-scoreboard
+  namespace: openshift
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/na-launch-workshop/workshop-python-keda-autoscaling.git
+      ref: http-scoring
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: nba-scoreboard:latest
+  triggers:
+    - type: ConfigChange
