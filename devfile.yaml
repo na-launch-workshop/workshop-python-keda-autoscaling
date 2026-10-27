@@ -51,6 +51,7 @@ commands:
       label: "3. Get my scoreboard URL"
       component: tools
       workingDir: ${PROJECT_SOURCE}
+      # CLUSTER-SPECIFIC: update apps domain in GitLab on the day — oc get ingresses.config cluster -o jsonpath='{.spec.domain}'
       commandLine: |
         NS=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
         echo ""
@@ -63,6 +64,7 @@ commands:
       label: "4. Run surge (simulate halftime traffic)"
       component: tools
       workingDir: ${PROJECT_SOURCE}
+      # CLUSTER-SPECIFIC: update apps domain in GitLab on the day — oc get ingresses.config cluster -o jsonpath='{.spec.domain}'
       commandLine: |
         NS=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
         URL="https://nba-scoreboard-${NS}.apps.cluster-tm766.dyn.redhatworkshops.io/api/score"

@@ -13,8 +13,9 @@ spec:
   source:
     type: Git
     git:
+      # CLUSTER-SPECIFIC: point at the GitLab repo on the day if app code will change there
       uri: https://github.com/na-launch-workshop/workshop-python-keda-autoscaling.git
-      ref: http-scoring
+      ref: main
   strategy:
     type: Docker
     dockerStrategy:

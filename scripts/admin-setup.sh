@@ -2,6 +2,16 @@
 # Admin setup — run once before the workshop on a new cluster.
 # Prerequisites: logged in as cluster-admin, KEDA and KEDA HTTP add-on installed.
 # Usage: ./scripts/admin-setup.sh
+#
+# Day-of checklist — once repos are pushed to GitLab on the provisioned cluster,
+# edit these CLUSTER-SPECIFIC values in GitLab (not GitHub, which stays on the test cluster):
+#   1. manifests/interceptor-service.yaml  Endpoints ip  → interceptor Service ClusterIP:
+#        oc get svc keda-add-ons-http-interceptor-proxy -n keda -o jsonpath='{.spec.clusterIP}'
+#   2. devfile.yaml  "3. Get my scoreboard URL" and "4. Run surge"  apps domain:
+#        oc get ingresses.config cluster -o jsonpath='{.spec.domain}'
+#   3. scripts/buildconfig.yaml  git uri → GitLab repo (only if app code will change there)
+# Run this script after participants have started their workspaces (step 2 only covers
+# *-devspaces namespaces that already exist).
 
 set -euo pipefail
 
