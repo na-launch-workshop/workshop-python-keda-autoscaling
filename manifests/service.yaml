@@ -4,6 +4,7 @@ metadata:
   name: nba-scoreboard
   labels:
     app: nba-scoreboard
+    backstage.io/kubernetes-id: workshop-python-keda-autoscaling
 spec:
   selector:
     app: nba-scoreboard

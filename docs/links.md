@@ -1,6 +1,6 @@
 # References
 
-- KEDA Kafka scaler: https://keda.sh/docs/latest/scalers/apache-kafka/
-- KEDA ScaledObject: https://keda.sh/docs/latest/concepts/scaling-deployments/
-- confluent-kafka-python: https://docs.confluent.io/kafka-clients/python/current/overview.html
+- KEDA HTTP Add-on: https://github.com/kedacore/http-add-on
+- KEDA concepts: https://keda.sh/docs/latest/concepts/
+- Kubernetes Python client: https://github.com/kubernetes-client/python
 - FastAPI: https://fastapi.tiangolo.com/

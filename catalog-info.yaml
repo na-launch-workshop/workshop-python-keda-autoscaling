@@ -2,9 +2,9 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: workshop-python-keda-autoscaling
-  title: Event-Driven Autoscaling with KEDA - Python
+  title: Event-Driven Autoscaling with KEDA HTTP Add-on - Python
   description: |
-    Scale a Python Kafka consumer from zero to many replicas automatically using KEDA
+    Scale a Python web app from zero to many replicas on HTTP traffic using the KEDA HTTP Add-on
   annotations:
     backstage.io/kubernetes-id: workshop-python-keda-autoscaling
     backstage.io/kubernetes-namespace: developers-devspaces
@@ -16,13 +16,10 @@ metadata:
   tags:
     - python
     - keda
-    - kafka
+    - http
 # links:
 #   - url: https://<devspaces-url>/#<hosted-git-repo>
 #     title: 🚀 Launch from Dev Spaces
-#     icon: web
-#   - url: https://<kafka-ui-url>
-#     title: Kafka UI
 #     icon: web
 spec:
   type: module

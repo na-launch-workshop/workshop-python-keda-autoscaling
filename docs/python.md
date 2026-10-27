@@ -1,17 +1,26 @@
 # Python
 
-This project uses [FastAPI](https://fastapi.tiangolo.com/) for the web layer and
-[confluent-kafka](https://github.com/confluentinc/confluent-kafka-python) for Kafka access.
+This project uses [FastAPI](https://fastapi.tiangolo.com/) for the web layer and the
+[Kubernetes Python client](https://github.com/kubernetes-client/python) to report pod status.
 
 ## Layout
 
 | Path | Purpose |
 |---|---|
-| `app/main.py` | FastAPI app: starts the consumer, serves `/status` and the dashboard |
-| `app/consumer.py` | Background thread that consumes `keda-events` slowly |
-| `app/status.py` | Reads committed vs. end offsets to report consumer lag |
-| `app/config.py` | Environment-driven configuration |
-| `producer.py` | Standalone script that floods the topic |
+| `app/main.py` | FastAPI app: score, metrics and status APIs, serves the dashboard |
+| `app/static/index.html` | Scoreboard dashboard — polls the APIs below |
+| `surge.py` | Standalone script that floods `/api/score` with concurrent requests |
+| `manifests/` | Deployment, Service, Route and interceptor Service for your namespace |
+| `scripts/` | Admin-only cluster setup (image build, permissions) |
+
+## API
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/score` | Current game score. Handles at most 12 concurrent requests per pod (0.4s each); beyond that returns `503` |
+| `GET /api/metrics` | Success rate over the last 30s, as seen by the pod answering the request |
+| `GET /api/status` | Replica counts and ready pod names for the `nba-scoreboard` Deployment |
+| `GET /api/health` | Liveness check |
 
 ## Installing dependencies
 
@@ -28,30 +37,18 @@ python3.11 -m pip install --user -r requirements.txt
 python3.11 -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
 ```
 
-The dashboard is then served at `http://localhost:8080/` and the raw lag JSON at
-`http://localhost:8080/status`.
+The dashboard is then served at `http://localhost:8080/`. Outside the cluster the pod
+status panel is empty — `/api/status` needs in-cluster credentials.
 
-## Producing a backlog
+## Producing a surge
 
 ```shell script
-python3.11 producer.py 3000
+python3.11 surge.py <url> [concurrency] [duration_seconds]
+python3.11 surge.py http://localhost:8080/api/score 20 60
 ```
-
-## Configuration
-
-All settings are read from the environment:
-
-| Variable | Default |
-|---|---|
-| `KAFKA_BOOTSTRAP_SERVERS` | `kafka-kafka-bootstrap:9092` |
-| `KAFKA_TOPIC` | `keda-events` |
-| `KAFKA_CONSUMER_GROUP` | `keda-consumer-group` |
-| `DEMO_PROCESSING_DELAY_MS` | `2500` |
-| `KAFKA_PARTITION_COUNT` | `5` |
-| `PORT` | `8080` |
 
 ## Related Guides
 
 - FastAPI ([guide](https://fastapi.tiangolo.com/)): Build the application
-- confluent-kafka-python ([guide](https://docs.confluent.io/kafka-clients/python/current/overview.html)): Publish and consume Kafka records
-- KEDA Kafka scaler ([guide](https://keda.sh/docs/latest/scalers/apache-kafka/)): Scale deployments from Kafka lag
+- Kubernetes Python client ([guide](https://github.com/kubernetes-client/python)): Read Deployment and Pod status
+- KEDA HTTP Add-on ([guide](https://github.com/kedacore/http-add-on)): Scale deployments from HTTP traffic
