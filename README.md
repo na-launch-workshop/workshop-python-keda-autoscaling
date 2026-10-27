@@ -17,27 +17,25 @@ Your job: create a KEDA `HTTPScaledObject` that automatically scales the scorebo
 ## Prerequisites
 
 - Dev Spaces workspace open with this repository
-- Run **"2. Install dependencies"** from the command palette
+- Your scoreboard is already deployed in your namespace by the instructor
 
 ---
 
-## Step 1 — Deploy and open your scoreboard
+## Step 1 — Open your scoreboard
 
-Run **"1. Deploy scoreboard"** from the command palette. This creates your own copy of the scoreboard (Deployment, Service and Route) in your namespace.
-
-Then run **"3. Get my scoreboard URL"** and open `https://<hostname>` in a browser. Keep the hostname handy — you'll need it in Step 3.
+Run **"1. Get my scoreboard URL"** from the command palette and open `https://<hostname>` in a browser. Keep the hostname handy — you'll need it in Step 3.
 
 You should see the live game — Knicks vs Spurs, Q4, scores updating every few seconds. The **Activity Log** and **Success Rate** gauge on the right should both show 100%.
 
 ---
 
-## Step 2 — Run the surge
+## Step 2 — Halftime
 
-Run **"4. Run surge (simulate halftime traffic)"** from the command palette.
+When everyone is ready, the instructor starts the halftime surge — a flood of fans hitting every scoreboard at once.
 
-Watch the dashboard — the success rate will drop and the activity log will fill with failures. This is what happens when one pod handles more traffic than it can process.
+Watch your dashboard — the success rate will drop and the activity log will fill with failures. This is what happens when one pod handles more traffic than it can process.
 
-Leave the surge running.
+The surge keeps running while you work on Step 3.
 
 ---
 
@@ -54,7 +52,7 @@ metadata:
   name: nba-scoreboard
 spec:
   hosts:
-    - <YOUR-HOSTNAME>        # from "3. Get my scoreboard URL" — hostname only, no https://
+    - <YOUR-HOSTNAME>        # from "1. Get my scoreboard URL" — hostname only, no https://
   scaleTargetRef:
     name: nba-scoreboard     # name of the Deployment to scale
     kind: Deployment
@@ -87,7 +85,7 @@ spec:
 
 ## Step 4 — Apply and watch
 
-Run **"5. Apply HTTPScaledObject + enable KEDA routing"** from the command palette.
+Run **"2. Apply HTTPScaledObject + enable KEDA routing"** from the command palette.
 
 This does two things:
 
@@ -100,19 +98,17 @@ Watch the dashboard:
 - The **success rate** will climb back toward 100%
 - The **activity log** will show the recovery in real time
 
+Run **"3. Watch my pods"** to follow the replica count from the terminal too.
+
 ---
 
-## Step 5 — Stop the surge and watch scale-in
+## Step 5 — Watch scale-in
 
-Stop the surge (`Ctrl+C` in the surge terminal).
+The instructor stops the surge.
 
 About a minute later (`scaledownPeriod: 60`), KEDA starts removing pods. The pod grid lights will go out one by one — down to **one pod**.
 
-Why not zero? The dashboard is served by the scoreboard itself and polls it every second, so an open browser tab is real traffic. To see true scale-to-zero, close the browser tab and watch from the terminal:
-
-```bash
-oc get deployment nba-scoreboard -w
-```
+Why not zero? The dashboard is served by the scoreboard itself and polls it every second, so an open browser tab is real traffic. To see true scale-to-zero, close the browser tab and keep **"3. Watch my pods"** running.
 
 After another minute `READY` drops to `0/0`. Open the URL again and KEDA wakes a pod back up — the first request waits for the cold start.
 
@@ -126,3 +122,5 @@ Edit `manifests/httpscaledobject.yaml` and re-apply with `oc apply -f manifests/
 - Change `max` to `10` — more pods available under extreme load
 - Change `min` to `1` — no cold start on first request
 - Change `scaledownPeriod` to `300` — pods stay around longer after a spike
+
+Ask the instructor to surge your scoreboard again to see the effect.

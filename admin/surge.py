@@ -1,22 +1,29 @@
-"""Flood /api/score with concurrent requests to trigger 502s.
+"""Flood /api/score with concurrent requests to trigger 503s.
 
 Usage: python3.11 surge.py [url] [concurrency] [duration_seconds]
+
+Set SURGE_INSECURE=1 to skip TLS verification (e.g. self-signed cluster certs).
 """
 
+import os
+import ssl
 import sys
 import time
 import threading
 import urllib.request
 import urllib.error
 
-def hit(url: str, results: list) -> None:
+_CTX = ssl._create_unverified_context() if os.getenv("SURGE_INSECURE") else None
+
+
+def hit(url: str) -> int:
     try:
-        with urllib.request.urlopen(url, timeout=3) as r:
-            results.append(r.status)
+        with urllib.request.urlopen(url, timeout=3, context=_CTX) as r:
+            return r.status
     except urllib.error.HTTPError as e:
-        results.append(e.code)
+        return e.code
     except Exception:
-        results.append(0)
+        return 0
 
 
 def main() -> None:
@@ -28,15 +35,16 @@ def main() -> None:
     print("Press Ctrl+C to stop early.\n")
 
     stop = threading.Event()
-    results: list[int] = []
+    counts = {"total": 0, "ok": 0}
     lock = threading.Lock()
 
     def worker():
         while not stop.is_set():
-            r: list[int] = []
-            hit(url, r)
+            status = hit(url)
             with lock:
-                results.extend(r)
+                counts["total"] += 1
+                if status == 200:
+                    counts["ok"] += 1
 
     threads = [threading.Thread(target=worker, daemon=True) for _ in range(concurrency)]
     for t in threads:
@@ -47,8 +55,8 @@ def main() -> None:
         while time.time() - start < duration:
             time.sleep(2)
             with lock:
-                total = len(results)
-                ok    = results.count(200)
+                total = counts["total"]
+                ok    = counts["ok"]
                 errs  = total - ok
             print(f"  {int(time.time()-start):3d}s  total={total:4d}  ok={ok:4d}  errors={errs:4d}")
     except KeyboardInterrupt:

@@ -25,30 +25,9 @@ components:
       size: 1G
 
 commands:
-  - id: deploy-scoreboard
-    exec:
-      label: "1. Deploy scoreboard"
-      component: tools
-      workingDir: ${PROJECT_SOURCE}
-      commandLine: |
-        oc apply -f manifests/deployment.yaml \
-                 -f manifests/service.yaml \
-                 -f manifests/interceptor-service.yaml \
-                 -f manifests/route.yaml
-      group:
-        kind: build
-        isDefault: true
-
-  - id: install
-    exec:
-      label: "2. Install dependencies"
-      component: tools
-      workingDir: ${PROJECT_SOURCE}
-      commandLine: "python3.11 -m pip install --user -q -r requirements.txt"
-
   - id: get-url
     exec:
-      label: "3. Get my scoreboard URL"
+      label: "1. Get my scoreboard URL"
       component: tools
       workingDir: ${PROJECT_SOURCE}
       # CLUSTER-SPECIFIC: update apps domain in GitLab on the day — oc get ingresses.config cluster -o jsonpath='{.spec.domain}'
@@ -59,20 +38,9 @@ commands:
         echo "nba-scoreboard-${NS}.apps.cluster-tm766.dyn.redhatworkshops.io"
         echo ""
 
-  - id: surge
-    exec:
-      label: "4. Run surge (simulate halftime traffic)"
-      component: tools
-      workingDir: ${PROJECT_SOURCE}
-      # CLUSTER-SPECIFIC: update apps domain in GitLab on the day — oc get ingresses.config cluster -o jsonpath='{.spec.domain}'
-      commandLine: |
-        NS=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
-        URL="https://nba-scoreboard-${NS}.apps.cluster-tm766.dyn.redhatworkshops.io/api/score"
-        python3.11 surge.py "$URL" 20 86400
-
   - id: apply-httpscaledobject
     exec:
-      label: "5. Apply HTTPScaledObject + enable KEDA routing"
+      label: "2. Apply HTTPScaledObject + enable KEDA routing"
       component: tools
       workingDir: ${PROJECT_SOURCE}
       commandLine: |
@@ -80,3 +48,13 @@ commands:
         oc patch route nba-scoreboard --type=json \
           -p='[{"op":"replace","path":"/spec/to/name","value":"keda-interceptor"}]' &&
         echo "Done — KEDA is now managing your scoreboard."
+      group:
+        kind: run
+        isDefault: true
+
+  - id: watch-pods
+    exec:
+      label: "3. Watch my pods"
+      component: tools
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: "oc get deployment nba-scoreboard -w"

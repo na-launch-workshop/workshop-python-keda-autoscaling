@@ -26,7 +26,7 @@ browser / surge → Route → Service keda-interceptor → KEDA interceptor (ked
 ```
 
 A Route can only point at a Service in its own namespace, but the interceptor runs in the
-`keda` namespace. `manifests/interceptor-service.yaml` bridges the gap: a local
+`keda` namespace. `admin/manifests/interceptor-service.yaml` bridges the gap: a local
 `keda-interceptor` Service whose Endpoints point at the shared interceptor.
 The interceptor uses the request's hostname to find your `HTTPScaledObject` — that is why
 `hosts` must match your Route exactly.

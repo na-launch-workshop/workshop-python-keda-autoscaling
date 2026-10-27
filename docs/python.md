@@ -7,11 +7,12 @@ This project uses [FastAPI](https://fastapi.tiangolo.com/) for the web layer and
 
 | Path | Purpose |
 |---|---|
-| `app/main.py` | FastAPI app: score, metrics and status APIs, serves the dashboard |
-| `app/static/index.html` | Scoreboard dashboard — polls the APIs below |
-| `surge.py` | Standalone script that floods `/api/score` with concurrent requests |
-| `manifests/` | Deployment, Service, Route and interceptor Service for your namespace |
-| `scripts/` | Admin-only cluster setup (image build, permissions) |
+| `admin/app/main.py` | FastAPI app: score, metrics and status APIs, serves the dashboard |
+| `admin/app/static/index.html` | Scoreboard dashboard — polls the APIs below |
+| `admin/surge.py` | Standalone script that floods `/api/score` with concurrent requests |
+| `admin/manifests/` | Deployment, Service, Route and interceptor Service deployed into each namespace |
+| `admin/*.sh` | Instructor-only: image build, deploy to every namespace, halftime surge |
+| `manifests/` | Where you create `httpscaledobject.yaml` |
 
 ## API
 
@@ -28,6 +29,7 @@ The `udi-rhel9` workspace image defaults `python3` to 3.9, but FastAPI needs 3.1
 The image also ships 3.11, so call it explicitly:
 
 ```shell script
+cd admin
 python3.11 -m pip install --user -r requirements.txt
 ```
 
@@ -46,6 +48,9 @@ status panel is empty — `/api/status` needs in-cluster credentials.
 python3.11 surge.py <url> [concurrency] [duration_seconds]
 python3.11 surge.py http://localhost:8080/api/score 20 60
 ```
+
+During the workshop the instructor runs the surge from inside the cluster with
+`admin/surge-all.sh`, one surge per participant scoreboard.
 
 ## Related Guides
 
