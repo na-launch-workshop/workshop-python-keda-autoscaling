@@ -62,7 +62,7 @@ spec:
     service: nba-scoreboard  # the Service in front of the Deployment
   replicas:
     min: 0                   # scale to zero when idle
-    max: 5                   # max pods (matches topic partition count)
+    max: 4                   # max pods
   scalingMetric:
     requestRate:
       granularity: 1s        # measure request rate per second
@@ -77,7 +77,7 @@ spec:
 | `hosts` | The hostname KEDA intercepts — must match your Route exactly |
 | `scaleTargetRef` | Which Deployment KEDA controls |
 | `replicas.min: 0` | True scale-to-zero — no idle pods, no idle cost |
-| `replicas.max: 5` | Upper limit on pods |
+| `replicas.max: 4` | Upper limit on pods |
 | `targetValue: 10` | Once requests exceed 10/s per pod, add another pod |
 
 ---

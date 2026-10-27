@@ -471,7 +471,7 @@
     function renderPods(pods) {
       const grid = document.getElementById('pod-grid');
       let html = '';
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 4; i++) {
         const pod = pods[i];
         const name = pod ? pod.split('-').slice(-2).join('-') : '';
         html += `<div class="pod-slot ${pod ? 'active' : ''}">
