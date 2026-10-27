@@ -113,6 +113,37 @@
 
     .pod-label-footer { font-family: var(--mono); font-size: .6rem; color: #333; letter-spacing: .1em; text-align: center; }
 
+    /* Championship overlay */
+    .left { position: relative; }
+    .champ-overlay {
+      display: none; position: absolute; inset: 0;
+      background: linear-gradient(135deg, #003594 0%, #001f5b 40%, #0a0a0a 100%);
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 1.25rem; z-index: 10; overflow: hidden;
+      animation: champ-in .6s ease-out;
+    }
+    .champ-overlay.show { display: flex; }
+    @keyframes champ-in { from{opacity:0;transform:scale(.96)} to{opacity:1;transform:scale(1)} }
+    .champ-trophy { font-size: 6.5rem; animation: tbounce 1.2s ease-in-out infinite alternate; }
+    @keyframes tbounce { from{transform:translateY(0) scale(1)} to{transform:translateY(-14px) scale(1.06)} }
+    .champ-title {
+      font-size: 1.8rem; font-weight: 900; text-transform: uppercase;
+      letter-spacing: .1em; text-align: center;
+      background: linear-gradient(135deg, #f58426, #ffd700);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .champ-sub { font-family: var(--mono); font-size: .72rem; color: rgba(255,255,255,.55); letter-spacing: .18em; text-transform: uppercase; text-align: center; }
+    .champ-badge {
+      background: var(--live); color: #000;
+      font-family: var(--mono); font-size: .65rem; font-weight: 800;
+      padding: .35rem 1.1rem; border-radius: 999px; letter-spacing: .1em; text-transform: uppercase;
+      animation: bpulse 1.6s ease-in-out infinite;
+    }
+    @keyframes bpulse { 0%,100%{box-shadow:0 0 16px rgba(0,230,118,.4)} 50%{box-shadow:0 0 36px rgba(0,230,118,.9)} }
+    .confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .cp { position: absolute; top: -14px; width: 8px; height: 13px; border-radius: 2px; animation: cfall linear infinite; }
+    @keyframes cfall { to { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+
     /* ── RIGHT: Dashboard ─────────────────── */
     .right {
       display: flex;
@@ -280,6 +311,15 @@
     </div>
 
     <div class="pod-label-footer" id="pod-label"></div>
+
+    <!-- Championship overlay — shown when 4 pods are running -->
+    <div class="champ-overlay" id="champ-overlay">
+      <div class="confetti" id="confetti"></div>
+      <div class="champ-trophy">🏆</div>
+      <div class="champ-title">Knicks Win!<br>Championship Secured</div>
+      <div class="champ-sub">Game 5 · Madison Square Garden · Final</div>
+      <div class="champ-badge">⚡ KEDA Autoscaling Active — All 4 Pods Running</div>
+    </div>
   </div>
 
   <!-- RIGHT: Dashboard -->
@@ -524,8 +564,34 @@
           renderPods(d.pods);
           const podCount = d.ready >= 0 ? d.ready : 0;
           document.querySelector('.pod-sec-lbl').textContent = `KEDA — Active Pods (${podCount} ready)`;
+          // Championship easter egg — all 4 pods running
+          const overlay = document.getElementById('champ-overlay');
+          if (podCount >= 4) {
+            if (!overlay.classList.contains('show')) {
+              overlay.classList.add('show');
+              spawnConfetti();
+            }
+          } else {
+            overlay.classList.remove('show');
+          }
         }
       } catch(_) {}
+    }
+
+    function spawnConfetti() {
+      const colors = ['#f58426','#ffd700','#003594','#00e676','#ffffff','#ee0000'];
+      const container = document.getElementById('confetti');
+      container.innerHTML = '';
+      for (let i = 0; i < 60; i++) {
+        const el = document.createElement('div');
+        el.className = 'cp';
+        el.style.left = Math.random() * 100 + '%';
+        el.style.background = colors[Math.floor(Math.random() * colors.length)];
+        el.style.animationDuration = (2.5 + Math.random() * 3) + 's';
+        el.style.animationDelay = (Math.random() * 3) + 's';
+        el.style.transform = `rotate(${Math.random() * 360}deg)`;
+        container.appendChild(el);
+      }
     }
 
     fetchScore(); fetchStatus(); fetchMetrics();
