@@ -7,9 +7,7 @@
 # edit these CLUSTER-SPECIFIC values in GitLab (not GitHub, which stays on the test cluster):
 #   1. admin/manifests/interceptor-service.yaml  Endpoints ip  → interceptor Service ClusterIP:
 #        oc get svc keda-add-ons-http-interceptor-proxy -n keda -o jsonpath='{.spec.clusterIP}'
-#   2. devfile.yaml  "1. Get my scoreboard URL"  apps domain:
-#        oc get ingresses.config cluster -o jsonpath='{.spec.domain}'
-#   3. admin/buildconfig.yaml  git uri → GitLab repo (only if app code will change there)
+#   2. admin/buildconfig.yaml  git uri → GitLab repo (only if app code will change there)
 #
 # Workshop flow (instructor):
 #   ./admin/admin-setup.sh          build the image (this script)

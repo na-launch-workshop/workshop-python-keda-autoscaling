@@ -30,12 +30,14 @@ commands:
       label: "1. Get my scoreboard URL"
       component: tools
       workingDir: ${PROJECT_SOURCE}
-      # CLUSTER-SPECIFIC: update apps domain in GitLab on the day — oc get ingresses.config cluster -o jsonpath='{.spec.domain}'
       commandLine: |
-        NS=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
+        HOST=$(oc get route nba-scoreboard -o jsonpath='{.spec.host}') || {
+          echo "❌ No scoreboard found in your namespace — ask the instructor."; exit 1; }
         echo ""
         echo "Your scoreboard hostname (paste into httpscaledobject.yaml):"
-        echo "nba-scoreboard-${NS}.apps.cluster-tm766.dyn.redhatworkshops.io"
+        echo "$HOST"
+        echo ""
+        echo "Open in a browser: https://$HOST"
         echo ""
 
   - id: apply-httpscaledobject
@@ -44,6 +46,17 @@ commands:
       component: tools
       workingDir: ${PROJECT_SOURCE}
       commandLine: |
+        # Refuse to apply someone else's hostname — it would hijack their traffic.
+        F=manifests/httpscaledobject.yaml
+        HOST=$(oc get route nba-scoreboard -o jsonpath='{.spec.host}')
+        [ -f "$F" ] || { echo "❌ $F not found — create it first (Step 3)."; exit 1; }
+        FOUND=$(grep -oE 'nba-scoreboard-[A-Za-z0-9.-]+' "$F" | grep '\.apps\.' | sort -u)
+        if [ "$FOUND" != "$HOST" ]; then
+          echo "❌ hosts in $F must be your own scoreboard hostname:"
+          echo "     expected: $HOST"
+          echo "     found:    ${FOUND:-<none>}"
+          exit 1
+        fi
         oc apply -f manifests/httpscaledobject.yaml &&
         oc patch route nba-scoreboard --type=json \
           -p='[{"op":"replace","path":"/spec/to/name","value":"keda-interceptor"}]' &&
