@@ -16,8 +16,7 @@ metadata:
   name: keda-interceptor
 subsets:
   - addresses:
-      # CLUSTER-SPECIFIC: update in GitLab on the day — interceptor Service ClusterIP (not a pod IP):
-      #   oc get svc keda-add-ons-http-interceptor-proxy -n keda -o jsonpath='{.spec.clusterIP}'
-      - ip: 172.231.41.100
+      # Filled in by deploy-all.sh with this cluster's keda-add-ons-http-interceptor-proxy ClusterIP
+      - ip: INTERCEPTOR_IP
     ports:
       - port: 8080

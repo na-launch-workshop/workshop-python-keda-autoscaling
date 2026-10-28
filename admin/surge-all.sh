@@ -10,7 +10,7 @@
 set -euo pipefail
 
 SURGE_NS=nba-surge
-IMAGE=image-registry.openshift-image-registry.svc:5000/openshift/nba-scoreboard:latest
+IMAGE=quay.io/pknezevich/nba-scoreboard:v1
 CONCURRENCY="${CONCURRENCY:-20}"
 
 routes() {

@@ -2,8 +2,18 @@
 # Deploy a scoreboard into every participant namespace (*-devspaces, excluding openshift-devspaces).
 # Run after participants have started their workspaces — the namespaces don't exist before.
 # Re-runnable: namespaces that already have a scoreboard are skipped, so run it again for latecomers.
-# Prerequisites: logged in as cluster-admin, admin/admin-setup.sh already run (image built).
+# Prerequisites: logged in as cluster-admin on the target cluster, KEDA and the KEDA HTTP add-on installed.
 # Usage: ./admin/deploy-all.sh [namespace ...]
+#
+# Nothing in the repo is cluster-specific: the image comes from Quay (admin/build-push.sh) and the
+# interceptor IP is looked up on whichever cluster you are logged into.
+#
+# Workshop flow (instructor), once per cluster:
+#   oc login <cluster>
+#   participants start their workspaces
+#   ./admin/deploy-all.sh           scoreboard into every *-devspaces namespace (re-run for latecomers)
+#   ./admin/surge-all.sh start      halftime surge for everyone
+#   ./admin/surge-all.sh stop       end of surge — participants watch scale-in
 #
 # Permissions are normally set up separately (Kevin's project). This script only checks
 # them and grants what is missing, so it never overlaps with existing bindings:
@@ -12,6 +22,12 @@
 
 set -euo pipefail
 cd "$(dirname "$0")"
+
+INTERCEPTOR_IP=$(oc get svc keda-add-ons-http-interceptor-proxy -n keda -o jsonpath='{.spec.clusterIP}' 2>/dev/null || true)
+if [ -z "$INTERCEPTOR_IP" ]; then
+  echo "KEDA HTTP add-on interceptor not found (svc keda-add-ons-http-interceptor-proxy in namespace keda)." >&2
+  exit 1
+fi
 
 NAMESPACES="${*:-$(oc get ns -o name | grep -- '-devspaces$' | cut -d/ -f2 | grep -v '^openshift-' | sort)}"
 
@@ -37,6 +53,7 @@ ensure_permissions() {
 }
 
 echo "=== NBA Scoreboard — Deploy to participant namespaces ==="
+echo "   Cluster: $(oc whoami --show-server)   interceptor: $INTERCEPTOR_IP"
 echo ""
 
 if ! oc get clusterrole keda-http-scaledobject-editor >/dev/null 2>&1; then
@@ -57,8 +74,8 @@ for ns in $NAMESPACES; do
   oc apply -n "$ns" \
     -f manifests/deployment.yaml \
     -f manifests/service.yaml \
-    -f manifests/interceptor-service.yaml \
     -f manifests/route.yaml >/dev/null 2>&1
+  sed "s/INTERCEPTOR_IP/$INTERCEPTOR_IP/" manifests/interceptor-service.yaml | oc apply -n "$ns" -f - >/dev/null 2>&1
   echo "   + $ns → https://$(oc get route nba-scoreboard -n "$ns" -o jsonpath='{.spec.host}') ($perms)"
 done
 
