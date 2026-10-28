@@ -15,7 +15,7 @@
 set -euo pipefail
 
 SURGE_NS=nba-surge
-IMAGE=quay.io/pknezevich/nba-scoreboard:v1
+IMAGE=image-registry.openshift-image-registry.svc:5000/workspace-images/nba-scoreboard:latest
 CONCURRENCY="${CONCURRENCY:-20}"
 CTX=""
 

@@ -11,7 +11,7 @@ This project uses [FastAPI](https://fastapi.tiangolo.com/) for the web layer and
 | `admin/app/static/index.html` | Scoreboard dashboard — polls the APIs below |
 | `admin/surge.py` | Standalone script that floods `/api/score` with concurrent requests |
 | `admin/manifests/` | Deployment, Service, Route and interceptor Service deployed into each namespace |
-| `admin/*.sh` | Instructor-only: image build, deploy to every namespace, halftime surge |
+| `admin/*.sh` | Instructor-only: deploy to every namespace, halftime surge |
 | `manifests/` | Where you create `httpscaledobject.yaml` |
 
 ## API

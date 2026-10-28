@@ -5,8 +5,10 @@
 # Prerequisites: logged in as cluster-admin on the target cluster, KEDA and the KEDA HTTP add-on installed.
 # Usage: ./admin/deploy-all.sh [namespace ...]
 #
-# Nothing in the repo is cluster-specific: the image comes from Quay (admin/build-push.sh) and the
-# interceptor IP is looked up on whichever cluster you are logged into.
+# Nothing in the repo is cluster-specific: every cluster builds the image itself (the workspace-images
+# chart in ocp-dev-days-rdshw-gitops builds admin/ from this repo's main branch), and the interceptor
+# IP is looked up on whichever cluster you are logged into. After changing admin/app or admin/surge.py,
+# push to main, then rebuild on each cluster: oc start-build nba-scoreboard -n workspace-images
 #
 # Workshop flow (instructor), once per cluster:
 #   oc login <cluster>

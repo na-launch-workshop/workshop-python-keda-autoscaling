@@ -1,4 +1,4 @@
-site_name: Event-Driven Autoscaling with KEDA HTTP Add-on - Python
+site_name: Event-Driven Autoscaling with KEDA - Python
 site_description: Scale a Python web app from zero to many replicas on HTTP traffic using the KEDA HTTP Add-on
 
 nav:

@@ -1,10 +1,17 @@
-# Module: Event-Driven Autoscaling with KEDA HTTP Add-on
+# 🚀 Module: Event-Driven Autoscaling with KEDA
 
-**Technology Stack:** Python · FastAPI · KEDA · OpenShift
+NBA Finals Scoreboard — Game 5
+
+**Technology Stack:**
+
+- Python
+- FastAPI
+- KEDA
+- OpenShift
 
 ---
 
-## Scenario
+## 🎯 **Scenario**
 
 It's Game 5 of the NBA Finals. The Knicks are up 3-1 and MSG is packed. Fans across the city are hitting your scoreboard app every few seconds to check the score.
 
@@ -14,14 +21,16 @@ Your job: create a KEDA `HTTPScaledObject` that automatically scales the scorebo
 
 ---
 
-## Prerequisites
+## 📋 Prerequisites
 
 - Dev Spaces workspace open with this repository
 - Your scoreboard is already deployed in your namespace by the instructor
 
 ---
 
-## Step 1 — Open your scoreboard
+## 🧩 **Challenge**
+
+### Step 1 — Open your scoreboard
 
 Run **"1. Get my scoreboard URL"** from the command palette and open `https://<hostname>` in a browser. Keep the hostname handy — you'll need it in Step 3.
 
@@ -29,7 +38,7 @@ You should see the live game — Knicks vs Spurs, Q4, scores updating every few 
 
 ---
 
-## Step 2 — Halftime
+### Step 2 — Halftime
 
 When everyone is ready, the instructor starts the halftime surge — a flood of fans hitting every scoreboard at once.
 
@@ -39,7 +48,7 @@ The surge keeps running while you work on Step 3.
 
 ---
 
-## Step 3 — Build the HTTPScaledObject
+### Step 3 — Build the HTTPScaledObject
 
 Create a new file: `manifests/httpscaledobject.yaml`
 
@@ -83,7 +92,7 @@ spec:
 
 ---
 
-## Step 4 — Apply and watch
+### Step 4 — Apply and watch
 
 Run **"2. Apply HTTPScaledObject + enable KEDA routing"** from the command palette.
 
@@ -102,7 +111,7 @@ Run **"3. Watch my pods"** to follow the replica count from the terminal too.
 
 ---
 
-## Step 5 — Watch scale-in
+### Step 5 — Watch scale-in
 
 The instructor stops the surge.
 
@@ -114,7 +123,7 @@ After another minute `READY` drops to `0/0`. Open the URL again and KEDA wakes a
 
 ---
 
-## Stretch goal — tune the HTTPScaledObject
+### Stretch goal — tune the HTTPScaledObject
 
 Edit `manifests/httpscaledobject.yaml` and re-apply with `oc apply -f manifests/httpscaledobject.yaml`:
 

@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: quay.io/pknezevich/nba-scoreboard:v1
+          image: image-registry.openshift-image-registry.svc:5000/workspace-images/nba-scoreboard:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
